@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f6">
+  <meta name="description" content="Painel demonstrativo Estética Pro IA para gestão de um estúdio de estética.">
+  <title>Estética Pro IA · Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="modules.css">
+  <link rel="stylesheet" href="identity.css">
+  <link rel="stylesheet" href="strategy.css">
+  <link rel="stylesheet" href="crm.css">
+  <script src="marketing-engine.js" defer></script>
+  <script src="secretaria-engine.js" defer></script>
+  <script src="crm-engine.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#inicio" data-go="inicio" aria-label="Estética Pro IA, início">
+        <span class="brand-mark">e<span>+</span></span>
+        <span class="brand-copy"><strong>estética<span>pro</span></strong><small>INTELIGÊNCIA PARA CUIDAR</small></span>
+      </a>
+      <div class="workspace"><span class="avatar avatar-main">TL</span><span><strong>Tami Linda</strong><small>Biomédica esteta</small></span><span class="chevron">⌄</span></div>
+      <p class="nav-label">MENU PRINCIPAL</p>
+      <nav class="nav-list" aria-label="Menu principal">
+        <a class="nav-item active" href="#inicio" data-page="inicio"><span class="nav-icon">⌂</span>Visão geral</a>
+        <a class="nav-item" href="#secretaria" data-page="secretaria"><span class="nav-icon">✳</span>Secretária virtual<span class="nav-pill">IA</span></a>
+        <a class="nav-item" href="#crm" data-page="crm"><span class="nav-icon">◎</span>CRM de Clientes</a>
+        <a class="nav-item" href="#marketing" data-page="marketing"><span class="nav-icon">◈</span>Marketing<span class="nav-count" id="draft-count">2</span></a>
+        <a class="nav-item" href="#identidade" data-page="identidade"><span class="nav-icon">◉</span>Identidade Visual</a>
+        <a class="nav-item" href="#agenda" data-page="agenda"><span class="nav-icon">▦</span>Agenda</a>
+        <a class="nav-item" href="#aprovacoes" data-page="aprovacoes"><span class="nav-icon">✓</span>Aprovações<span class="nav-count" id="pending-count">3</span></a>
+        <a class="nav-item" href="#financeiro" data-page="financeiro"><span class="nav-icon">▤</span>Financeiro</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card"><span class="help-icon">✦</span><strong>Um espaço para crescer</strong><p>Organize sua rotina e cuide do que importa.</p><button data-action="help">Conheça o painel <span>↗</span></button></div>
+        <button class="nav-item settings" data-action="settings"><span class="nav-icon">⚙</span>Configurações</button>
+        <div class="profile"><span class="avatar">TL</span><span><strong>Tami Linda</strong><small>Plano demonstração</small></span><button aria-label="Opções do perfil" data-action="profile">···</button></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar"><button class="mobile-menu" aria-label="Abrir menu" data-action="menu">☰</button><div class="breadcrumb-controls"><button class="history-button" id="nav-back" data-action="nav-back" aria-label="Voltar" title="Voltar" disabled>←</button><button class="history-button" id="nav-forward" data-action="nav-forward" aria-label="Avançar" title="Avançar" disabled>→</button><div class="breadcrumb"><button data-go="inicio">Painel</button><span>/</span><strong id="breadcrumb-current">Visão geral</strong></div></div><div class="top-actions"><span class="demo-badge"><i></i> AMBIENTE DE DEMONSTRAÇÃO</span><button class="icon-button notification" aria-label="Notificações" data-action="notifications">♧<i></i></button><span class="top-avatar">TL</span></div></header>
+      <div class="content-wrap">
+        <section class="welcome-row"><div><p class="eyebrow" id="today-label">QUARTA-FEIRA, 18 DE JUNHO DE 2025</p><h1 id="page-title">Bom dia, Tami Linda <span class="wave">✳</span></h1><p class="subtitle" id="page-subtitle">Aqui está o resumo do seu espaço hoje.</p></div><button class="primary-button" id="page-primary-action" data-action="new-appointment"><span>＋</span> Novo agendamento</button></section>
+
+        <section id="workspace-view" class="workspace-view" hidden></section>
+        <div id="overview-view">
+        <section class="stats-grid" aria-label="Resumo do dia">
+          <article class="stat-card"><div class="stat-head"><span>Atendimentos hoje</span><span class="stat-icon lilac">▦</span></div><div class="stat-value">08 <span class="stat-trend positive">↗ 2</span></div><div class="stat-foot">em relação à semana passada</div><div class="sparkline purple"><i style="height:35%"></i><i style="height:50%"></i><i style="height:42%"></i><i style="height:64%"></i><i style="height:52%"></i><i style="height:76%"></i><i style="height:100%"></i></div></article>
+          <article class="stat-card"><div class="stat-head"><span>Faturamento do mês</span><span class="stat-icon mint">R$</span></div><div class="stat-value">R$ 12.480</div><div class="stat-foot"><span class="positive">↗ 12,8%</span> em relação ao mês passado</div><div class="sparkline green"><i style="height:28%"></i><i style="height:40%"></i><i style="height:35%"></i><i style="height:57%"></i><i style="height:50%"></i><i style="height:72%"></i><i style="height:100%"></i></div></article>
+          <article class="stat-card"><div class="stat-head"><span>Aguardando aprovação</span><span class="stat-icon peach">✧</span></div><div class="stat-value"><span id="approval-summary-count">03</span> <span class="stat-note">itens</span></div><div class="stat-foot">Conteúdos prontos para revisar</div><button class="text-link" data-go="aprovacoes">Ver aprovações <span>→</span></button></article>
+          <article class="stat-card"><div class="stat-head"><span>Novos contatos</span><span class="stat-icon blue">♡</span></div><div class="stat-value">14 <span class="stat-trend positive">↗ 4</span></div><div class="stat-foot">nos últimos 7 dias</div><div class="contact-dots"><span>AL</span><span>BF</span><span>CS</span><span>+11</span></div></article>
+        </section>
+
+        <section class="middle-grid">
+          <article class="panel agenda-panel"><div class="panel-heading"><div><p class="eyebrow">SUA ROTINA</p><h2>Agenda de hoje <span class="date-chip">18 jun</span></h2></div><button class="subtle-button" data-go="agenda">Ver agenda completa <span>→</span></button></div><div class="appointment-list">
+            <div class="appointment"><time>09:00</time><span class="timeline-dot lilac-dot"></span><div class="appointment-info"><strong>Avaliação facial</strong><small>Cliente demonstração A. · Sala 01</small></div><span class="status confirmed">Confirmado</span></div>
+            <div class="appointment"><time>10:30</time><span class="timeline-dot green-dot"></span><div class="appointment-info"><strong>Limpeza de pele</strong><small>Cliente demonstração B. · Sala 01</small></div><span class="status confirmed">Confirmado</span></div>
+            <div class="appointment"><time>13:00</time><span class="timeline-dot peach-dot"></span><div class="appointment-info"><strong>Retorno de avaliação</strong><small>Cliente demonstração C. · Sala 02</small></div><span class="status pending">A confirmar</span></div>
+            <div class="appointment"><time>15:30</time><span class="timeline-dot blue-dot"></span><div class="appointment-info"><strong>Consulta de rotina</strong><small>Cliente demonstração D. · Sala 01</small></div><span class="status confirmed">Confirmado</span></div>
+          </div><button class="mobile-agenda-link" data-go="agenda">Ver agenda completa →</button></article>
+
+          <article class="panel assistant-panel"><div class="panel-heading"><div><p class="eyebrow">SEU APOIO NO DIA A DIA</p><h2>Secretária virtual <span class="online-dot"></span></h2></div><span class="ai-tag">✳ IA</span></div><div class="assistant-hello"><div class="assistant-avatar">✳</div><div><strong>Oi, Tami Linda! 👋</strong><p>Separei algumas coisas para você hoje.</p></div></div><div class="assistant-note"><span>✧</span><p>Você tem <strong>2 horários livres</strong> esta semana. Que tal avisar quem está na lista de espera?</p></div><button class="assistant-button" data-go="secretaria">Conversar com a secretária <span>→</span></button><div class="privacy-note"><span>⌑</span> Demonstração local com conteúdo fictício</div></article>
+        </section>
+
+        <section class="bottom-grid"><article class="panel marketing-panel"><div class="panel-heading"><div><p class="eyebrow">CONTEÚDO E PRESENÇA</p><h2>Marketing</h2></div><button class="subtle-button" data-go="marketing">Ver tudo <span>→</span></button></div><div class="marketing-content"><div class="campaign-art"><span>IDEIA DA SEMANA</span><strong>Seu momento<br>de autocuidado ✨</strong><small>POST PARA REDES SOCIAIS</small></div><div class="campaign-info"><span class="draft-label"><i></i> Rascunho</span><strong>Uma pausa na rotina<br>também é cuidado.</strong><p>Post educativo · Criado hoje</p><button class="text-link" data-go="marketing">Editar conteúdo <span>→</span></button></div></div></article>
+          <article class="panel approvals-panel"><div class="panel-heading"><div><p class="eyebrow">PENDÊNCIAS</p><h2>Precisa da sua atenção</h2></div><span class="approval-number">03</span></div><div class="approval-row"><span class="approval-icon lavender">✎</span><span><strong>Post para Instagram</strong><small>Conteúdo de autocuidado</small></span><button data-go="aprovacoes" aria-label="Abrir aprovação">→</button></div><div class="approval-row"><span class="approval-icon soft-green">◷</span><span><strong>Lembrete de agenda</strong><small>2 confirmações pendentes</small></span><button data-go="aprovacoes" aria-label="Abrir aprovação">→</button></div><button class="approval-footer" data-go="aprovacoes">Revisar todas as pendências <span>→</span></button></article></section>
+        <footer class="footer"><span>© 2025 Estética Pro IA</span><span>Feito para simplificar a sua rotina <span class="footer-heart">♡</span></span><span class="footer-demo">Versão demonstrativa</span></footer>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="modal-host"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
