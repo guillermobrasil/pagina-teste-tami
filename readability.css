@@ -1,0 +1,51 @@
+/* Aumenta a leitura da interface sem alterar o tamanho das artes e prévias. */
+.app-shell :is(p:not(.eyebrow),.breadcrumb,.privacy-note,.footer,.form-hint):not(.art-preview *):not(.identity-preview-stack *):not(.template-art *):not(.mini-art *):not(.campaign-art *){font-size:13px!important}
+.app-shell :is(small,label,button:not(.mobile-menu):not(.icon-button):not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,a,time,code,option,span:not(.nav-icon):not(.stat-icon):not(.online-dot):not(.timeline-dot):not(.wave):not(.assistant-avatar):not(.crm-return-icon):not(.crm-rank-icon):not(.agent-scaffold-symbol):not(.identity-seal span):not(.brand-copy span):not(.footer-heart),.chat-empty,.stat-head,.stat-foot,.toast):not(.art-preview *):not(.identity-preview-stack *):not(.template-art *):not(.mini-art *):not(.campaign-art *){font-size:12px!important}
+#modal-host :is(p,small,label,button:not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,span,code,option){font-size:12px!important}
+#toast{font-size:12px!important}
+.app-shell :is(.eyebrow,.nav-label){font-size:11px!important}
+.app-shell :is(.demo-badge,.nav-pill,.nav-count,.date-chip,.ai-tag,.type-label,.status,.draft-label,.approval-number,.identity-local-tag,.crm-return-status,.crm-return-source,.agenda-daily-count,.agenda-connection-status,.agent-scaffold-status){font-size:11px!important}
+.app-shell .panel-heading h2,.app-shell .identity-controls>.panel-heading h2,.app-shell .identity-preview-panel>.panel-heading h2{font-size:17px!important}
+.app-shell .crm-panel>.panel-heading h3,.app-shell .agenda-daily-heading h3,.app-shell .agenda-google-heading h3{font-size:17px!important}
+.app-shell .record-card h3,.app-shell .crm-rank-card h4{font-size:15px!important}
+.settings-form { max-width: 880px; }
+.settings-form h3 { margin: 18px 0 4px; color: var(--text-primary, #ead8ae); }
+.settings-form > p { color: var(--text-secondary, #c5bdad); }
+.procedure-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 12px 0; padding: 16px; border: 1px solid var(--border, #4b4550); border-radius: 12px; }
+.procedure-settings legend { padding: 0 8px; font-weight: 700; color: var(--text-primary, #ead8ae); }
+.procedure-settings label { margin: 0; }
+@media (max-width: 640px) { .procedure-settings { grid-template-columns: 1fr; } }
+.settings-top { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; text-decoration: none; font-size: 19px; color: var(--text-secondary, #d4c8dd); transition: background .18s ease, color .18s ease; }
+.settings-top:hover, .settings-top[aria-current="page"] { background: #332b3a; color: #e5c878; }
+@media (max-width: 620px) { .top-actions { gap: 10px; } .settings-top { width: 34px; height: 34px; } .demo-badge { display: none; } }
+.agenda-event-status.is-cancelled { color: #ffb7a8; background: #482b31; border-color: #72414b; }
+.finance-page > .panel-heading h2 { color: #e9d5a1; }
+.finance-page > h3 { margin: 22px 0 10px; color: #ddc9ef; }
+.finance-page .finance-summary article { border-color: #39313e; background: linear-gradient(145deg,#211c27,#1b1720); }
+.finance-page .finance-summary article:nth-child(1) span { color: #82d6aa; }
+.finance-page .finance-summary article:nth-child(2) span { color: #ff9e92; }
+.finance-page .finance-summary article:nth-child(3) span,
+.finance-page .finance-summary article:nth-child(4) span { color: #f0c27c; }
+.finance-page .finance-summary article:nth-child(5) span { color: #d6bd83; }
+.finance-page .finance-summary article:nth-child(6) span { color: #9fc6df; }
+.finance-page .table-wrap thead th { color: #b8a3d1; border-bottom-color: #493d50; }
+.finance-page .table-wrap tbody tr { transition: background .16s ease; }
+.finance-page .table-wrap tbody tr:hover { background: #24202a; }
+.finance-date { color: #a8b5c8 !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.finance-client { color: #d3b9ff !important; font-weight: 700; }
+.finance-procedure { display: inline-flex; padding: 4px 9px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.finance-procedure.procedure-botox { color: #f1d783; background: #3a321f; }
+.finance-procedure.procedure-preenchimento { color: #d5bbff; background: #34283f; }
+.finance-procedure.procedure-luz-pulsada { color: #8ed9dd; background: #20363a; }
+.finance-procedure.procedure-outro { color: #a9c9eb; background: #253344; }
+.finance-amount { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.finance-amount.is-income,.finance-summary .positive { color: #83d5a7 !important; }
+.finance-amount.is-cost,.finance-summary .negative { color: #f0bc72 !important; }
+.finance-amount.is-profit { color: #d6c28a !important; }
+.finance-amount.is-incomplete { color: #f2a3a0 !important; }
+.finance-duration { color: #b8a3d1 !important; white-space: nowrap; }
+.finance-description { color: #d5ceda !important; font-weight: 600; }
+.finance-description small { display: block; margin-top: 4px; color: #9b91a2 !important; font-weight: 500; }
+.finance-description.is-cancelled { color: #ff9e99 !important; }
+.finance-cancel-tag { display: inline-block; margin: 5px 0 0 6px; padding: 3px 6px; color: #ffaaa5 !important; background: #482b31; border-radius: 5px; font-size: 10px !important; font-weight: 800; letter-spacing: .4px; }
+@media (max-width: 640px) { .finance-procedure { white-space: normal; } }

@@ -1,0 +1,226 @@
+/* Neutral, editorial palette for a calm professional clinic interface. */
+:root {
+  color-scheme: dark;
+  --canvas: #171716;
+  --paper: #20201e;
+  --surface: #272725;
+  --surface-raised: #2e2d2a;
+  --line: #383734;
+  --ink: #ece9e3;
+  --muted: #aaa69e;
+  --brand: #b7a89c;
+  --brand-bright: #d3c8bd;
+  --brand-wash: #302e2b;
+  --purple: #b7a89c;
+  --purple-dark: #d3c8bd;
+  --green: #a2b5a4;
+  --red: #c98f89;
+  --amber: #c4ad8e;
+}
+
+body { background: var(--canvas) !important; color: #d6d2cb !important; }
+.sidebar, .topbar, .panel, .stat-card, .record-card, .finance-summary article,
+.modal-card, .template-card, .saved-design, .editor-toolbar, .strategy-option,
+.generated-slide, .strategy-saved-card, .judicial-source, .crm-tabs, .crm-metric,
+.crm-profile-metrics article, .crm-occurrence, .identity-controls, .identity-preview-panel {
+  background-color: var(--paper) !important; border-color: var(--line) !important; color: var(--ink) !important;
+}
+.sidebar, .topbar { box-shadow: 0 2px 14px #0002; }
+.panel, .stat-card { box-shadow: 0 4px 16px #0002; }
+
+.app-shell :where(h1,h2,h3,h4):not(.art-preview *):not(.identity-preview-stack *) { color: #eeeae3 !important; }
+.app-shell p:not(.eyebrow):not(.art-preview *):not(.identity-preview-stack *) { color: #c8c4bc !important; }
+.app-shell small:not(.art-preview *):not(.identity-preview-stack *) { color: #a9a59d !important; }
+.app-shell strong:not(.art-preview *):not(.identity-preview-stack *), .app-shell b:not(.art-preview *):not(.identity-preview-stack *) { color: #e2ded6 !important; }
+.eyebrow, .nav-label { color: #aaa69e !important; }
+.subtitle, .form-hint, .footer, .privacy-note, .breadcrumb, .record-date,
+.crm-method-note, .crm-heading p, .identity-feedback, .preview-caption,
+.judicial-disclaimer { color: #aaa69e !important; }
+
+.brand-copy strong span, .help-card button, .text-link, .crm-name-button,
+.breadcrumb button:hover, .subtle-button:hover { color: var(--brand-bright) !important; }
+.nav-item { color: #c2beb7 !important; }
+.nav-item:hover, .nav-item.active { color: #ece7df !important; background: #2a2927 !important; }
+.nav-item.active { box-shadow: inset 2px 0 #b7a89c !important; }
+.nav-pill, .nav-count, .date-chip, .ai-tag, .approval-number, .step-label {
+  color: #d0cbc2 !important; background: #2b2a28 !important; border-color: #44423e !important;
+}
+.brand-mark { background: #292824 !important; border: 1px solid #44413b; box-shadow: none !important; }
+.avatar, .top-avatar { color: #e2dbd1 !important; background: #34322e !important; }
+.demo-badge { color: #aaa69e !important; background: #252523 !important; border-color: #3b3a36 !important; }
+.demo-badge i { background: #9da99e !important; }
+.settings-top { color: #c9c2b8 !important; }
+.settings-top:hover, .settings-top[aria-current="page"] { background: #302e2b !important; color: #f0ece5 !important; }
+
+.primary-button { color: #211f1d !important; background: #d4cfc6 !important; box-shadow: none !important; }
+.primary-button:hover { background: #e5e1d9 !important; }
+.secondary-button, .assistant-button, .history-button, .slide-thumb, .slide-add,
+.kind-chip, .crm-tabs button { color: #d3cfc8 !important; background: #262624 !important; border-color: #45433f !important; }
+.secondary-button:hover, .history-button:not(:disabled):hover, .slide-thumb.selected,
+.kind-chip:hover, .crm-tabs button:hover { color: #f0ede7 !important; background: #302f2c !important; border-color: #69655d !important; }
+.secondary-button.danger { color: #d6a29c !important; border-color: #5b423f !important; }
+.secondary-button.danger:hover { background: #302827 !important; }
+a { color: #c9c2b8; }
+
+input, textarea, select, .workspace, .identity-color-field, .identity-font-grid select,
+.crm-filters input, .crm-filters select, .crm-section-heading select {
+  background-color: #242422 !important; color: #e7e3dc !important; border-color: #46443f !important;
+}
+input:focus, textarea:focus, select:focus { outline-color: #b7a89c !important; border-color: #80776e !important; }
+::placeholder { color: #88857f !important; opacity: 1; }
+label, .modal-form label, .identity-font-grid label, .editor-fields label,
+.caption-fields label, .strategy-form label, .judicial-form>label { color: #d1ccc4 !important; }
+
+.table-wrap, .table-wrap th, .table-wrap td, .crm-table th, .crm-table td { border-color: #393835 !important; }
+.table-wrap th, .crm-table th { color: #bcb7ae !important; background: #252523; }
+.table-wrap td, .crm-table td, td { color: #d1cdc6; }
+.table-wrap tbody tr:hover, .crm-table tbody tr:hover { background: #272725 !important; }
+.stat-head, .finance-summary article span, .crm-metric>span, .crm-profile-metrics article>span { color: #aaa69e !important; }
+.stat-value, .crm-metric>strong, .crm-profile-metrics article>strong { color: #e2ded6 !important; }
+.stat-icon, .approval-icon, .assistant-avatar, .judicial-result-icon { background: #302f2c !important; color: #d3ccc1 !important; }
+
+/* Status is communicated with restrained text color and a label, never a bright tile. */
+.positive, .status.confirmed, .soft-green, .type-label.receita { color: #a8c2ab !important; }
+.negative, .status.rejected, .crm-demo-label, .finance-description.is-cancelled,
+.finance-cancel-tag { color: #d59a93 !important; }
+.status.pending, .draft-label, .crm-return-status { color: #c8b38e !important; }
+.type-label, .status, .crm-return-status, .crm-return-source { background: #292826 !important; border: 1px solid #3d3b37; }
+.notice-box, .help-card, .assistant-note, .professional-review, .judicial-user-summary,
+.crm-privacy-note, .strategist-demo-banner, .strategist-editor-brief, .editor-safety-note {
+  background: #262523 !important; border-color: #413f3a !important; color: #cbc6bd !important;
+}
+.notice-box strong, .form-hint strong { color: #e3ded5 !important; }
+
+.chat-log { background: #1b1b19 !important; }
+.from-you { background: #302f2c !important; color: #e7e3dc !important; }
+.from-assistant { background: #262624 !important; color: #dedad2 !important; border-color: #3d3b37 !important; }
+.chat-suggestion-panel, .chat-suggestions button { background: #252523 !important; border-color: #403e3a !important; color: #dedad2 !important; }
+.chat-suggestions button:hover { background: #302f2c !important; border-color: #69655d !important; }
+.chat-suggestions button span { color: #c9c2b8 !important; }
+.agenda-event-status.is-cancelled { color: #d59a93 !important; background: #292624 !important; border-color: #51403d !important; }
+.agenda-week-day.selected, .agenda-day-tile.selected { background: #302f2c !important; border-color: #777168 !important; }
+.agenda-event, .agenda-day-tile, .agenda-google-panel, .agenda-day-panel { border-color: var(--line) !important; }
+
+/* Finance uses color for meaning, with no colored blocks or per-procedure rainbow. */
+.finance-page > .panel-heading h2 { color: #e8e4dc !important; }
+.finance-page > h3 { color: #d6d1c9 !important; }
+.finance-page .finance-summary article { border-color: var(--line) !important; background: #262624 !important; }
+.finance-page .finance-summary article span { color: #aaa69e !important; }
+.finance-page .finance-summary article:nth-child(1) span { color: #a8c2ab !important; }
+.finance-page .finance-summary article:nth-child(2) span { color: #d1a09a !important; }
+.finance-page .finance-summary article:nth-child(3) span,
+.finance-page .finance-summary article:nth-child(4) span { color: #c8b38e !important; }
+.finance-page .finance-summary article:nth-child(5) span,
+.finance-page .finance-summary article:nth-child(6) span { color: #c4beb4 !important; }
+.finance-page .table-wrap thead th { color: #c6c1b8 !important; }
+.finance-date { color: #aaa69e !important; }
+.finance-client { color: #ddd8cf !important; font-weight: 700; }
+.finance-procedure, .finance-procedure.procedure-botox, .finance-procedure.procedure-preenchimento,
+.finance-procedure.procedure-luz-pulsada, .finance-procedure.procedure-outro {
+  color: #d5d0c8 !important; background: transparent !important; border: 0; padding: 0; font-weight: 600;
+}
+.finance-amount.is-income, .finance-summary .positive { color: #a8c2ab !important; }
+.finance-amount.is-cost, .finance-summary .negative { color: #c9b99a !important; }
+.finance-amount.is-profit { color: #ded8cc !important; }
+.finance-amount.is-incomplete { color: #d59a93 !important; }
+.finance-duration { color: #b5b1a9 !important; }
+.finance-description { color: #d3cfc8 !important; }
+.finance-description.is-cancelled { color: #d59a93 !important; }
+.finance-cancel-tag { color: #d59a93 !important; background: transparent !important; border: 0; padding: 0; font-size: 10px !important; }
+
+.crm-rank-card, .crm-return-row, .crm-metric, .crm-occurrence { border-color: var(--line) !important; }
+.crm-rank-position { background: #2b2a28 !important; color: #c6c1b8 !important; }
+.crm-rank-item.is-leader .crm-rank-position { background: #35332f !important; color: #e1dcd3 !important; }
+.crm-rank-track { background: #353431 !important; }
+.crm-rank-track span { background: #aaa398 !important; }
+.crm-rank-card h3, .crm-section-heading h3, .crm-panel>.panel-heading h3 { color: #ddd8cf !important; }
+.crm-return-icon, .crm-rank-icon, .crm-tabs button.selected, .crm-tabs span { background: #302f2c !important; color: #d5d0c8 !important; }
+.crm-return-source, .crm-return-status { color: #c8c2b8 !important; }
+.agent-scaffold { background: #222220 !important; border-color: var(--line) !important; }
+.agent-scaffold-symbol { background: #302f2c !important; border-color: #4a4843 !important; color: #d6d1c9 !important; }
+.agent-scaffold-title h2, .agent-scaffold-block>span { color: #d7d2ca !important; }
+.agent-scaffold-status, .agent-chip { color: #cbc6bd !important; background: #292826 !important; border-color: #42403c !important; }
+.agent-scaffold-footer>span { color: #a8c2ab !important; }
+.strategy-option.recommended { background: #292826 !important; border-color: #5b5750 !important; }
+.strategy-option h3, .strategist-heading h2, .studio-section-title { color: #e2ded6 !important; }
+.editor-sequence strong, .generated-meta b, .copy-meta b { color: #d4cfc6 !important; }
+.judicial-hero, .identity-intro, .studio-intro, .strategist-launch { background: linear-gradient(120deg,#2a2926,#242422) !important; border-color: #44423d !important; }
+.judicial-hero h2, .identity-intro h2, .studio-intro h2, .strategist-launch h2 { color: #eeeae3 !important; }
+.identity-local-tag { color: #b9c7ba !important; background: #292b28 !important; }
+.modal-backdrop { background: #080807c9 !important; }
+.modal-close { color: #c4bfb6 !important; }
+#toast { background: #2c2a27 !important; color: #e8e4dc !important; border: 1px solid #48453f; }
+
+/* Readable type scale across navigation, forms, tables, and supporting copy. */
+.app-shell :is(p:not(.eyebrow), .breadcrumb, .privacy-note, .footer, .form-hint):not(.art-preview *):not(.identity-preview-stack *) { font-size: 15px !important; line-height: 1.55; }
+.app-shell :is(small,label,button:not(.mobile-menu):not(.icon-button):not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,a,time,code,option,span:not(.nav-icon):not(.stat-icon):not(.online-dot):not(.timeline-dot):not(.wave):not(.assistant-avatar):not(.crm-return-icon):not(.crm-rank-icon):not(.agent-scaffold-symbol):not(.identity-seal span):not(.brand-copy span):not(.footer-heart),.chat-empty,.stat-head,.stat-foot,.toast):not(.art-preview *):not(.identity-preview-stack *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { font-size: 14px !important; }
+#modal-host :is(p,small,label,button:not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,span,code,option) { font-size: 14px !important; }
+#toast { font-size: 14px !important; }
+.app-shell :is(.eyebrow,.nav-label) { font-size: 12px !important; }
+.app-shell :is(.demo-badge,.nav-pill,.nav-count,.date-chip,.ai-tag,.type-label,.status,.draft-label,.approval-number,.identity-local-tag,.crm-return-status,.crm-return-source,.agenda-daily-count,.agenda-connection-status,.agent-scaffold-status) { font-size: 12px !important; }
+.app-shell .panel-heading h2,.app-shell .identity-controls>.panel-heading h2,.app-shell .identity-preview-panel>.panel-heading h2 { font-size: 19px !important; }
+.app-shell .crm-panel>.panel-heading h3,.app-shell .agenda-daily-heading h3,.app-shell .agenda-google-heading h3 { font-size: 19px !important; }
+.app-shell .record-card h3,.app-shell .crm-rank-card h4 { font-size: 17px !important; }
+.app-shell :is(.appointment-info strong,.workspace strong,.profile strong,.approval-row strong,.help-card strong,.assistant-hello strong,.campaign-info>strong,.crm-rank-item strong) { font-size: 14px !important; }
+
+/* Editorial artwork and user supplied brand colors keep their own palette. */
+.whatsapp-page { display:grid; gap:18px; }
+.whatsapp-hero { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:24px; border:1px solid #44423d; border-radius:16px; background:linear-gradient(120deg,#2a2926,#242422); }
+.whatsapp-hero h2 { color:#eeeae3; margin:4px 0 8px; font-size:24px; }
+.whatsapp-hero p:not(.eyebrow) { max-width:620px; color:#c4bfb6; }
+.whatsapp-state { display:grid; gap:8px; min-width:205px; }
+.whatsapp-state span,.whatsapp-status { border:1px solid #48453f; border-radius:999px; padding:6px 11px; color:#c8c4bb; background:#252421; text-align:center; font-size:12px; letter-spacing:.04em; }
+.whatsapp-notice { border-left:3px solid #9eaa9b; }
+.whatsapp-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.whatsapp-form { display:grid; gap:10px; }
+.whatsapp-form label { margin-top:4px; color:#ddd8ce; font-weight:600; }
+.whatsapp-form textarea { resize:vertical; min-height:110px; }
+.whatsapp-drafts { display:grid; gap:12px; }
+.whatsapp-draft { border:1px solid #41403b; border-radius:12px; padding:16px; background:#242321; }
+.whatsapp-draft-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.whatsapp-category { color:#d3cbbd; font-weight:600; }
+.whatsapp-draft p { margin:12px 0; white-space:pre-wrap; overflow-wrap:anywhere; color:#e3ded5; }
+.whatsapp-draft small { color:#a9a49b; }
+.whatsapp-actions { display:flex; gap:8px; margin-top:12px; }
+.whatsapp-safety li { margin:8px 0; color:#d0cbc2; }
+.whatsapp-safety a { color:#bdc9ba; text-underline-offset:3px; }
+.whatsapp-page .agent-scaffold { margin-top:0; }
+@media(max-width:800px) { .whatsapp-grid { grid-template-columns:1fr; } .whatsapp-hero { align-items:flex-start; flex-direction:column; } .whatsapp-state { grid-template-columns:1fr; width:100%; } }
+
+/* Clientes e Relacionamento: separar informação por função com uma paleta sóbria. */
+.crm-page .crm-heading h2 { color:#e8e4dc !important; }
+.crm-page .crm-heading .eyebrow, .crm-page .panel-heading .eyebrow { color:#b9b0a3 !important; }
+.crm-page .crm-heading p, .crm-page .crm-method-note, .crm-page .crm-metric small { color:#aaa69e !important; }
+.crm-page .crm-metric>span, .crm-page .crm-profile-metrics article>span { color:#b8c2b8 !important; }
+.crm-page .crm-metric>strong, .crm-page .crm-profile-metrics article>strong { color:#e3ded5 !important; }
+.crm-page .crm-tabs button { color:#c5c0b7 !important; }
+.crm-page .crm-tabs button.selected { color:#e5dfd5 !important; box-shadow:inset 0 -2px #b4aa9d; }
+.crm-page .crm-tabs span { color:#c4b69f !important; }
+.crm-page .crm-panel>.panel-heading h3, .crm-page .crm-section-heading h3,
+.crm-page .crm-rank-card h4, .crm-page .crm-occurrence-head h3 { color:#ddd8cf !important; }
+.crm-page .crm-table thead th { color:#bdb6aa !important; }
+.crm-page .crm-table tbody td { color:#d1cdc5 !important; }
+.crm-page .crm-table tbody td:nth-child(2), .crm-page .crm-table tbody td:nth-child(3) { color:#b8b3aa !important; }
+.crm-page .crm-table tbody td:nth-child(4) { color:#c9c2b8 !important; }
+.crm-page .crm-name-button, .crm-page .crm-return-copy strong, .crm-page .crm-rank-name { color:#c9d3ca !important; }
+.crm-page .crm-demo-label { color:#c6a978 !important; }
+.crm-page .crm-return-date { color:#c3b8a6 !important; }
+.crm-page .crm-return-status.overdue { color:#d49a91 !important; background:#292624 !important; border-color:#51403d !important; }
+.crm-page .crm-return-status.today { color:#d4bd91 !important; background:#292722 !important; border-color:#4b4435 !important; }
+.crm-page .crm-return-status.upcoming { color:#a9c2ad !important; background:#242824 !important; border-color:#3d473f !important; }
+.crm-page .crm-return-source, .crm-page .crm-occurrence-meta { color:#aaa69e !important; }
+.crm-page .crm-return-source.crm-estimated { color:#c6b18b !important; }
+.crm-page .crm-return-source.crm-manual { color:#abc1ae !important; }
+.crm-page .crm-return-summary { color:#c3beb5 !important; }
+.crm-page .crm-return-summary strong { color:#e2ded6 !important; }
+.crm-page .crm-rank-position { color:#c4bcae !important; }
+.crm-page .crm-rank-item.is-leader .crm-rank-position { color:#d8c49c !important; }
+.crm-page .crm-rank-item strong { color:#ded8ce !important; }
+.crm-page .crm-category { color:#c5b69b !important; }
+.crm-page .crm-occurrence>p, .crm-page .crm-notes { color:#d0cbc2 !important; }
+.crm-page .crm-privacy-note { color:#c1bcb3 !important; }
+.crm-page .crm-privacy-note strong { color:#e0dad0 !important; }
+.crm-page :is(.crm-filters label,.crm-section-heading label) { color:#c2bdb4 !important; }
+.crm-tabs button { color:#c5c0b7 !important; }
+.crm-tabs button.selected { color:#e5dfd5 !important; box-shadow:inset 0 -2px #b4aa9d; }
+.crm-tabs span { color:#c4b69f !important; }

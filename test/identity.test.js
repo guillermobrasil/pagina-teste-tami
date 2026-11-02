@@ -317,17 +317,17 @@ test('CRM integra atendimento e pagamentos com o financeiro sem duplicar e persi
 
   const occurrenceForm = new FakeElement();
   occurrenceForm.id = 'crm-occurrence-form'; occurrenceForm.selectorMatches = ['form'];
-  occurrenceForm.values = { clientId: client.id, date: visit.date, category: 'Pendência de pagamento', description: 'Pagamento combinado não registrado na data informada.', actions: 'Contato administrativo preparado para revisão.', status: 'Pendente', responsible: 'Tami Linda' };
+  occurrenceForm.values = { clientId: client.id, date: visit.date, category: 'Pendência de pagamento', description: 'Pagamento combinado não registrado na data informada.', actions: 'Contato administrativo preparado para revisão.', status: 'Pendente', responsible: 'Tami' };
   await app.emitAsync('submit', occurrenceForm);
   state = JSON.parse(store.get('estetica-pro-ia-demo-v1'));
   assert.equal(state.occurrences.length, 1);
-  assert.equal(state.occurrences[0].responsible, 'Tami Linda');
+  assert.equal(state.occurrences[0].responsible, 'Tami');
   app.button('toggle-occurrence-status', { id: state.occurrences[0].id, status: 'Resolvida' });
   state = JSON.parse(store.get('estetica-pro-ia-demo-v1'));
   assert.equal(state.occurrences[0].status, 'Resolvida');
   const editOccurrence = new FakeElement();
   editOccurrence.id = 'crm-occurrence-form'; editOccurrence.selectorMatches = ['form']; editOccurrence.dataset.id = state.occurrences[0].id;
-  editOccurrence.values = { clientId: client.id, date: visit.date, category: 'Pendência de pagamento', description: 'Descrição factual corrigida após conferência.', actions: 'Providência registrada e conferida.', status: 'Resolvida', responsible: 'Tami Linda' };
+  editOccurrence.values = { clientId: client.id, date: visit.date, category: 'Pendência de pagamento', description: 'Descrição factual corrigida após conferência.', actions: 'Providência registrada e conferida.', status: 'Resolvida', responsible: 'Tami' };
   await app.emitAsync('submit', editOccurrence);
   state = JSON.parse(store.get('estetica-pro-ia-demo-v1'));
   assert.equal(state.occurrences.length, 1, 'corrigir ocorrência não cria duplicata');
