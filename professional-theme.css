@@ -224,3 +224,28 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .crm-tabs button { color:#c5c0b7 !important; }
 .crm-tabs button.selected { color:#e5dfd5 !important; box-shadow:inset 0 -2px #b4aa9d; }
 .crm-tabs span { color:#c4b69f !important; }
+.crm-rankings>.crm-section-heading h3 { color:#ece7de !important; font-size:22px !important; }
+.crm-rankings>.crm-section-heading .eyebrow { color:#aebbaa !important; }
+.crm-rankings>.crm-section-heading p:not(.eyebrow) { color:#bdb8ae !important; }
+.crm-rank-card { background:#222220 !important; border-color:#45443e !important; }
+.crm-rank-card-heading { padding-bottom:12px; border-bottom:1px solid #3a3935; }
+.crm-rank-icon { background:#2b302b !important; color:#b7c7b8 !important; border:1px solid #414a41; }
+.crm-rank-card h4 { color:#e4dfd6 !important; font-size:16px !important; }
+.crm-rank-card-heading small { color:#aaa69e !important; }
+.crm-rank-card li.crm-rank-item { padding:9px 0 11px !important; border-bottom-color:#393834 !important; }
+.crm-rank-position { background:#2b302b !important; border:1px solid #424a42; color:#c1cbbc !important; font-size:12px !important; }
+.crm-rank-item.is-leader .crm-rank-position { background:#33352f !important; border-color:#6b624f; color:#e0cda4 !important; }
+.crm-rank-name { color:#d1dbd1 !important; font-size:15px !important; }
+.crm-rank-item.is-leader .crm-rank-name { color:#e3e8df !important; font-weight:700; }
+.crm-rank-item strong { color:#d8c69f !important; font-size:15px !important; font-weight:700; font-variant-numeric:tabular-nums; }
+.crm-rank-track { height:6px !important; background:#393b37 !important; }
+.crm-rank-track span { background:linear-gradient(90deg,#718b76,#a9bea9) !important; }
+.crm-method-note { color:#b7b2a9 !important; }
+.app-shell .crm-page .crm-rank-card h4 { color:#e4dfd6 !important; font-size:17px !important; }
+.app-shell .crm-page span.crm-rank-position { color:#c1cbbc !important; font-size:13px !important; }
+.app-shell .crm-page .crm-rank-item.is-leader span.crm-rank-position { color:#e0cda4 !important; }
+.app-shell .crm-page span.crm-rank-name { color:#d1dbd1 !important; font-size:15px !important; }
+.app-shell .crm-page .crm-rank-item.is-leader span.crm-rank-name { color:#e3e8df !important; }
+.app-shell .crm-page .crm-rank-item strong { color:#d8c69f !important; font-size:15px !important; }
+.app-shell .crm-page .crm-rank-track { height:6px !important; background:#393b37 !important; }
+.app-shell .crm-page .crm-rank-track span { background:linear-gradient(90deg,#718b76,#a9bea9) !important; }
