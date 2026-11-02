@@ -16,6 +16,10 @@ const pageCopy = {
   configuracoes: ['Configurações do sistema', 'Cadastre os custos e informações usados nos atendimentos e cálculos financeiros.']
 };
 const storageKey = 'estetica-pro-ia-demo-v1';
+const storageBackupKey = `${storageKey}-backup`;
+const storageRecoveryKey = `${storageKey}-recovery`;
+let storageRecoveryNotice = '';
+let recoveryRawAvailable = false;
 const defaultIdentity = {
   colors: { primary: '#172B43', secondary: '#D9CDB9', background: '#F3EEE4', text: '#393B3E', highlight: '#B6975A' },
   titleFont: 'serif', bodyFont: 'sans', logo: 'assets/monograma-tc.png'
@@ -24,6 +28,7 @@ const localDate = () => {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
+const localISODate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const localTime = () => {
   const date = new Date();
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -131,7 +136,21 @@ function loadData() {
       if (saved.demoOccurrenceExamplesAdded) localStorage.setItem(storageKey, JSON.stringify(saved));
       return saved;
     }
-  } catch (error) { console.warn('Dados locais de demonstração inválidos; serão recriados.', error); }
+    if (saved) throw new Error('O formato dos dados salvos não é compatível.');
+  } catch (error) {
+    console.warn('Dados locais de demonstração inválidos; tentando recuperar uma cópia anterior.', error);
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) { localStorage.setItem(storageRecoveryKey, raw); recoveryRawAvailable = true; }
+      const backup = JSON.parse(localStorage.getItem(storageBackupKey));
+      if (backup && ['appointments', 'drafts', 'approvals', 'transactions', 'chat'].every((key) => Array.isArray(backup[key]))) {
+        storageRecoveryNotice = 'A última gravação estava danificada. Uma cópia local anterior foi recuperada; baixe um backup para guardá-la.';
+        localStorage.setItem(storageKey, JSON.stringify(backup));
+        return backup;
+      }
+    } catch (recoveryError) { console.warn('A cópia local automática também não pôde ser recuperada.', recoveryError); }
+    storageRecoveryNotice = 'Não foi possível ler os dados salvos. A versão danificada foi preservada para recuperação, mas os dados em memória começam vazios. Baixe backups regularmente.';
+  }
   return makeInitialData();
 }
 let data = loadData();
@@ -185,6 +204,7 @@ let agendaWeekOffset = 0;
 let agendaSelectedDate = localDate();
 let chatSuggestionsDismissed = false;
 let submittingSuggestedQuestion = false;
+let unsavedChanges = false;
 const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const money = (value) => Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const parseMoney = (value) => {
@@ -198,6 +218,31 @@ const roomCharge = (ratePerHour, durationMinutes, mode = data.settings.roomBilli
   const billableHours = mode === 'hora-cheia' ? Math.ceil(hours) : hours;
   return Math.round(Number(ratePerHour) * billableHours * 100) / 100;
 };
+function validISODate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isFinite(date.getTime()) && localISODate(date) === value;
+}
+function timeToMinutes(value) {
+  const match = /^(\d{2}):(\d{2})$/.exec(String(value || ''));
+  if (!match) return null;
+  const hour = Number(match[1]); const minute = Number(match[2]);
+  return hour < 24 && minute < 60 ? hour * 60 + minute : null;
+}
+function findAppointmentConflict(candidate, ignoreId = '') {
+  if (candidate.status === 'Cancelado') return null;
+  const start = timeToMinutes(candidate.time);
+  const duration = Number(candidate.durationMinutes) || Number(data.settings.defaultDuration || 1) * 60;
+  if (start === null || !Number.isFinite(duration) || duration <= 0) return null;
+  const end = start + duration;
+  return data.appointments.find((item) => {
+    if (item.id === ignoreId || item.status === 'Cancelado' || item.date !== candidate.date) return false;
+    const otherStart = timeToMinutes(item.time);
+    const otherDuration = Number(item.durationMinutes) || Number(item.durationHours || data.settings.defaultDuration || 1) * 60;
+    if (otherStart === null || !Number.isFinite(otherDuration) || otherDuration <= 0) return false;
+    return Math.max(start, otherStart) < Math.min(end, otherStart + otherDuration);
+  }) || null;
+}
 const formatDuration = (minutes) => {
   const total = Math.max(0, Math.round(Number(minutes) || 0));
   const hours = Math.floor(total / 60); const remainder = total % 60;
@@ -208,8 +253,19 @@ const formatDuration = (minutes) => {
 const receivedForVisit = (visit) => data.transactions.filter((item) => item.type === 'receita' && item.status !== 'Cancelado' && (item.sourceVisitId === visit.id || (Array.isArray(visit.paymentIds) && visit.paymentIds.includes(item.id)))).reduce((sum, item) => sum + Number(item.value || 0), 0);
 const displayDate = (value) => value ? new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR') : '—';
 const save = () => {
-  try { localStorage.setItem(storageKey, JSON.stringify({ ...data, chat: [] })); updateCounts(); return true; }
-  catch (error) { showToast('Não foi possível salvar neste navegador. Verifique o espaço disponível.'); return false; }
+  try {
+    const serialized = JSON.stringify({ ...data, chat: [] });
+    const previous = localStorage.getItem(storageKey);
+    localStorage.setItem(storageKey, serialized);
+    if (localStorage.getItem(storageKey) !== serialized) throw new Error('A gravação não foi confirmada pelo navegador.');
+    if (previous) {
+      try { localStorage.setItem(storageBackupKey, previous); }
+      catch (backupError) { console.warn('A gravação principal foi salva, mas a cópia automática anterior não pôde ser atualizada.', backupError); }
+    }
+    unsavedChanges = false;
+    updateCounts(); return true;
+  }
+  catch (error) { unsavedChanges = true; showToast('Não foi possível confirmar o salvamento. Seus dados permanecem nesta tela; exporte um backup antes de sair e verifique o espaço do navegador.', 'error'); return false; }
 };
 function updateCounts() {
   const drafts = document.querySelector('#draft-count');
@@ -219,6 +275,32 @@ function updateCounts() {
   const pendingTotal = data.approvals.filter((item) => item.status === 'Pendente').length;
   if (pending) pending.textContent = pendingTotal;
   if (summary) summary.textContent = String(pendingTotal).padStart(2, '0');
+  updateOverview();
+}
+function updateOverview() {
+  const today = localDate();
+  const currentMonth = today.slice(0, 7);
+  const todayAppointments = [...data.appointments].filter((item) => item.date === today && item.status !== 'Cancelado').sort((a, b) => a.time.localeCompare(b.time));
+  const attendanceCount = document.querySelector('#today-appointments-count');
+  if (attendanceCount) attendanceCount.textContent = String(todayAppointments.length);
+  const monthIncome = data.transactions.filter((item) => !item.demo && item.status !== 'Cancelado' && item.type === 'receita' && String(item.date || '').startsWith(currentMonth)).reduce((sum, item) => sum + Number(item.value || 0), 0);
+  const monthRevenue = document.querySelector('#month-revenue');
+  if (monthRevenue) monthRevenue.textContent = money(monthIncome);
+  const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const newClients = data.clients.filter((item) => !item.demo && item.firstVisit >= localISODate(sevenDaysAgo) && item.firstVisit <= today).length;
+  const contacts = document.querySelector('#new-contacts-count');
+  if (contacts) contacts.textContent = String(newClients);
+  const dateChip = document.querySelector('#today-date-chip');
+  if (dateChip) dateChip.textContent = new Date(`${today}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }).replace('.', '');
+  const appointmentList = document.querySelector('#today-appointments-list');
+  if (appointmentList) appointmentList.innerHTML = todayAppointments.length ? todayAppointments.map((item, index) => `<div class="appointment"><time>${escapeHTML(item.time || '—')}</time><span class="timeline-dot ${['lilac-dot', 'green-dot', 'peach-dot', 'blue-dot'][index % 4]}"></span><div class="appointment-info"><strong>${escapeHTML(item.title)}</strong><small>${item.demo ? 'Exemplo fictício · agenda local' : 'Compromisso local'}</small></div><span class="status ${item.status === 'A confirmar' ? 'pending' : 'confirmed'}">${escapeHTML(item.status)}</span></div>`).join('') : '<p class="empty-state compact">Nenhum compromisso ativo para hoje.</p>';
+  const pending = data.approvals.filter((item) => item.status === 'Pendente');
+  const pendingCount = document.querySelector('#overview-pending-count');
+  if (pendingCount) pendingCount.textContent = String(pending.length).padStart(2, '0');
+  const approvalList = document.querySelector('#overview-approval-list');
+  if (approvalList) approvalList.innerHTML = pending.length ? pending.slice(0, 2).map((item) => `<div class="approval-row"><span class="approval-icon lavender">✎</span><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.type)} · aguardando revisão</small></span><button data-go="aprovacoes" aria-label="Abrir aprovação: ${escapeHTML(item.title)}">→</button></div>`).join('') : '<div class="empty-state compact">Nenhuma aprovação pendente.</div>';
+  const year = document.querySelector('#footer-year');
+  if (year) year.textContent = String(new Date().getFullYear());
 }
 function showToast(message, kind = 'success') {
   toast.textContent = message;
@@ -717,7 +799,44 @@ function visitCostForm(visit) {
 }
 function renderSettings() {
   const s = data.settings || defaultSettings();
-  return `<section class="panel module-panel"><div class="panel-heading"><div><p class="eyebrow">GERAL · FINANCEIRO · PROCEDIMENTOS</p><h2>Dados usados nos cálculos</h2></div></div><div class="notice-box">Os valores ficam salvos neste navegador. Custos em branco não são tratados como zero. Confirme custos e regime tributário com a contabilidade antes de usar para apuração oficial.</div><form id="settings-form" class="modal-form settings-form"><h3>Geral</h3><label>Nome do espaço<input name="businessName" maxlength="80" value="${escapeHTML(s.businessName || '')}"></label><label>Duração padrão de atendimento (horas)<input name="defaultDuration" type="number" min="0.25" step="0.25" value="${escapeHTML(s.defaultDuration || '')}" placeholder="Informe se costuma ser igual"></label><h3>Financeiro e tributação</h3><label>Aluguel da sala (R$ por hora) · valor provisório, confirme depois<input name="hourlyRoomCost" inputmode="decimal" value="${s.hourlyRoomCost === '' ? '' : moneyInput(s.hourlyRoomCost)}" placeholder="120,00"></label><label>Como cobrar o tempo da sala<select name="roomBillingMode"><option value="proporcional" ${s.roomBillingMode === 'proporcional' ? 'selected' : ''}>Proporcional aos minutos usados</option><option value="hora-cheia" ${s.roomBillingMode === 'hora-cheia' ? 'selected' : ''}>Arredondar para cada hora iniciada</option></select></label><p class="form-hint">Modo atual: ${s.roomBillingMode === 'hora-cheia' ? 'cada hora iniciada é cobrada por inteiro' : 'cálculo proporcional por minuto (${money(Number(s.hourlyRoomCost || 0) / 60)}/min nesta tarifa)'}. Você pode alterar esta opção quando quiser.</p><label>Regime tributário<select name="taxRegime"><option value="nao-confirmado" ${s.taxRegime === 'nao-confirmado' ? 'selected' : ''}>Não confirmado</option><option value="simples" ${s.taxRegime === 'simples' ? 'selected' : ''}>Simples Nacional (confirmado)</option><option value="presumido" ${s.taxRegime === 'presumido' ? 'selected' : ''}>Lucro Presumido</option><option value="real" ${s.taxRegime === 'real' ? 'selected' : ''}>Lucro Real</option><option value="outro" ${s.taxRegime === 'outro' ? 'selected' : ''}>Outro / confirmar</option></select></label><p class="form-hint">A seleção do regime é apenas informativa: o sistema não estima imposto nem aplica alíquota. Registre o tributo efetivamente pago em Financeiro.</p><h3>Procedimentos e custo de materiais</h3><p>Informe o custo total de materiais por atendimento e marcas usadas, se desejar. Estes valores são custos, não preços cobrados do cliente.</p>${s.procedures.map((p) => `<fieldset class="procedure-settings"><legend>${escapeHTML(p.name)}</legend><input type="hidden" name="procedureId" value="${escapeHTML(p.id)}"><label>Materiais / marcas<input name="materials" maxlength="160" value="${escapeHTML(p.materials || '')}" placeholder="Opcional"></label><label>Custo total de materiais por atendimento (R$)<input name="materialCost" inputmode="decimal" value="${p.materialCost === '' ? '' : moneyInput(p.materialCost)}" placeholder="Ainda não informado"></label></fieldset>`).join('')}<div class="modal-actions"><button class="primary-button">Salvar configurações</button></div></form></section>`;
+  return `<section class="panel module-panel"><div class="panel-heading"><div><p class="eyebrow">GERAL · FINANCEIRO · PROCEDIMENTOS</p><h2>Dados usados nos cálculos</h2></div></div><div class="notice-box"><strong>Ambiente público de demonstração.</strong> Não existe login, controle de acesso ou banco de dados de produção. Use somente dados fictícios; registros ficam neste navegador e não são enviados ao servidor. Custos em branco não são tratados como zero. Confirme cálculos com a contabilidade.</div>${storageRecoveryNotice ? `<div class="notice-box" role="alert"><strong>Atenção à recuperação:</strong> ${escapeHTML(storageRecoveryNotice)}</div>` : ''}<section class="panel settings-backup"><div class="panel-heading"><div><p class="eyebrow">PROTEÇÃO DOS REGISTROS</p><h3>Backup e recuperação</h3></div></div><p>Os dados ficam neste navegador. Limpar os dados do site, trocar de navegador ou aparelho pode apagá-los. Exporte uma cópia JSON e guarde-a em local seguro.</p><div class="record-actions"><button class="secondary-button" data-action="export-local-backup">Baixar cópia de segurança</button><button class="secondary-button" data-action="choose-backup-file">Restaurar de arquivo</button>${recoveryRawAvailable ? '<button class="secondary-button" data-action="export-damaged-recovery">Baixar arquivo preservado para recuperação técnica</button>' : ''}<button class="secondary-button" data-action="protect-local-storage">Solicitar proteção do navegador</button><input id="backup-file-input" type="file" accept="application/json,.json" hidden></div><p class="form-hint">Restaurar substitui os dados atuais deste navegador. A cópia não é criptografada: não inclua informações reais de pacientes.</p><p class="form-hint" id="storage-protection-status">${escapeHTML(storageRecoveryNotice ? 'Verifique a mensagem de recuperação acima.' : 'Salvamento confirmado localmente quando você altera os registros.')}</p></section><form id="settings-form" class="modal-form settings-form"><h3>Geral</h3><label>Nome do espaço<input name="businessName" maxlength="80" value="${escapeHTML(s.businessName || '')}"></label><label>Duração padrão de atendimento (horas)<input name="defaultDuration" type="number" min="0.25" step="0.25" value="${escapeHTML(s.defaultDuration || '')}" placeholder="Informe se costuma ser igual"></label><h3>Financeiro e tributação</h3><label>Aluguel da sala (R$ por hora) · valor provisório, confirme depois<input name="hourlyRoomCost" inputmode="decimal" value="${s.hourlyRoomCost === '' ? '' : moneyInput(s.hourlyRoomCost)}" placeholder="120,00"></label><label>Como cobrar o tempo da sala<select name="roomBillingMode"><option value="proporcional" ${s.roomBillingMode === 'proporcional' ? 'selected' : ''}>Proporcional aos minutos usados</option><option value="hora-cheia" ${s.roomBillingMode === 'hora-cheia' ? 'selected' : ''}>Arredondar para cada hora iniciada</option></select></label><p class="form-hint">Modo atual: ${s.roomBillingMode === 'hora-cheia' ? 'cada hora iniciada é cobrada por inteiro' : 'cálculo proporcional por minuto (' + money(Number(s.hourlyRoomCost || 0) / 60) + '/min nesta tarifa)'}. Você pode alterar esta opção quando quiser.</p><label>Regime tributário<select name="taxRegime"><option value="nao-confirmado" ${s.taxRegime === 'nao-confirmado' ? 'selected' : ''}>Não confirmado</option><option value="simples" ${s.taxRegime === 'simples' ? 'selected' : ''}>Simples Nacional (confirmado)</option><option value="presumido" ${s.taxRegime === 'presumido' ? 'selected' : ''}>Lucro Presumido</option><option value="real" ${s.taxRegime === 'real' ? 'selected' : ''}>Lucro Real</option><option value="outro" ${s.taxRegime === 'outro' ? 'selected' : ''}>Outro / confirmar</option></select></label><p class="form-hint">A seleção do regime é apenas informativa: o sistema não estima imposto nem aplica alíquota. Registre o tributo efetivamente pago em Financeiro.</p><h3>Procedimentos e custo de materiais</h3><p>Informe o custo total de materiais por atendimento e marcas usadas, se desejar. Estes valores são custos, não preços cobrados do cliente.</p>${s.procedures.map((p) => `<fieldset class="procedure-settings"><legend>${escapeHTML(p.name)}</legend><input type="hidden" name="procedureId" value="${escapeHTML(p.id)}"><label>Materiais / marcas<input name="materials" maxlength="160" value="${escapeHTML(p.materials || '')}" placeholder="Opcional"></label><label>Custo total de materiais por atendimento (R$)<input name="materialCost" inputmode="decimal" value="${p.materialCost === '' ? '' : moneyInput(p.materialCost)}" placeholder="Ainda não informado"></label></fieldset>`).join('')}<div class="modal-actions"><button class="primary-button">Salvar configurações</button></div></form></section>`;
+}
+function downloadLocalBackup() {
+  try {
+    const backup = { app: 'estetica-pro-ia', formatVersion: 1, exportedAt: new Date().toISOString(), data: { ...data, chat: [] } };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = `estetica-pro-backup-${localDate()}.json`;
+    document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    showToast('Cópia de segurança baixada. Guarde-a em local seguro.');
+  } catch (error) { showToast('Não foi possível criar o arquivo de backup.', 'error'); }
+}
+function downloadDamagedRecovery() {
+  try {
+    const raw = localStorage.getItem(storageRecoveryKey);
+    if (!raw) return showToast('Nenhum arquivo de recuperação está disponível.', 'error');
+    const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = `estetica-pro-dados-danificados-${localDate()}.json`;
+    document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    showToast('Arquivo preservado baixado. Ele pode exigir recuperação técnica.');
+  } catch (error) { showToast('Não foi possível baixar o arquivo preservado.', 'error'); }
+}
+async function restoreLocalBackup(file) {
+  if (!file || file.size > 20 * 1024 * 1024) return showToast('Escolha um arquivo JSON de até 20 MB.', 'error');
+  let imported;
+  try {
+    const parsed = JSON.parse(await file.text());
+    imported = parsed?.app === 'estetica-pro-ia' ? parsed.data : parsed;
+    const required = ['appointments', 'drafts', 'approvals', 'transactions', 'clients', 'clientVisits', 'occurrences'];
+    if (!imported || !required.every((key) => Array.isArray(imported[key]))) throw new Error('Estrutura de backup inválida.');
+  } catch (error) { return showToast('Este arquivo não parece ser um backup válido do sistema.', 'error'); }
+  if (!window.confirm('Restaurar este backup vai substituir os dados atuais salvos neste navegador. Deseja continuar?')) return;
+  const priorData = data;
+  data = { ...imported, chat: [] };
+  if (!save()) { data = priorData; return; }
+  window.location.reload();
 }
 function openModal(title, content) {
   const host = document.querySelector('#modal-host');
@@ -893,6 +1012,17 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const { action, id } = button.dataset;
+  if (action === 'export-local-backup') { downloadLocalBackup(); return; }
+  if (action === 'export-damaged-recovery') { downloadDamagedRecovery(); return; }
+  if (action === 'choose-backup-file') { document.querySelector('#backup-file-input')?.click(); return; }
+  if (action === 'protect-local-storage') {
+    const status = document.querySelector('#storage-protection-status');
+    if (!navigator.storage?.persist) { if (status) status.textContent = 'Este navegador não oferece a solicitação de proteção. Exporte backups manualmente.'; return; }
+    navigator.storage.persist().then((granted) => {
+      if (status) status.textContent = granted ? 'O navegador concedeu armazenamento persistente para este site. Continue exportando backups externos.' : 'O navegador não concedeu armazenamento persistente. Exporte backups externos com frequência.';
+    }).catch(() => { if (status) status.textContent = 'Não foi possível consultar a proteção do navegador. Exporte backups manualmente.'; });
+    return;
+  }
   if (action === 'edit-finance-visit') {
     const visit = data.clientVisits.find((item) => item.id === id);
     const client = data.clients.find((item) => item.id === visit?.clientId);
@@ -1244,7 +1374,7 @@ document.addEventListener('submit', async (event) => {
     const chargedTotal = receivedValue;
     const durationMinutes = Number(values.durationMinutes);
     const durationHours = durationMinutes / 60;
-    if (!client || procedure.length < 2 || !values.date || !Number.isFinite(receivedValue) || receivedValue < 0 || !Number.isInteger(durationMinutes) || durationMinutes < 1) return showToast('Informe procedimento, data, duração em minutos e um valor recebido válido.', 'error');
+    if (!client || procedure.length < 2 || !validISODate(values.date) || !Number.isFinite(receivedValue) || receivedValue <= 0 || !Number.isInteger(durationMinutes) || durationMinutes < 1) return showToast('Informe procedimento, data válida, duração em minutos e valor recebido maior que zero.', 'error');
     const paymentStatus = 'pago';
     if (values.paymentMethod === 'cartao' && (!/^([1-9]|1[0-2])$/.test(values.installments))) return showToast('Escolha de 1 a 12 parcelas.', 'error');
     const old = data.clientVisits.find((item) => item.id === form.dataset.id);
@@ -1260,10 +1390,15 @@ document.addEventListener('submit', async (event) => {
     const appliedRoomBillingMode = old?.roomBillingModeSnapshot || data.settings.roomBillingMode;
     const visit = { ...(old || {}), id: old?.id || crypto.randomUUID(), clientId: client.id, date: values.date, procedure, chargedTotal, paymentStatus, paymentMethod: 'pix', installments: 1, durationMinutes, durationHours, appointmentTime: values.appointmentTime || '', roomRateSnapshot: appliedRoomRate, roomBillingModeSnapshot: appliedRoomBillingMode, roomCost: keepManualRoomCost ? old.roomCost : appliedRoomRate == null ? null : roomCharge(appliedRoomRate, durationMinutes, appliedRoomBillingMode), roomCostSource: keepManualRoomCost ? 'manual' : appliedRoomRate == null ? '' : 'configuracoes', materialCostSnapshot: keepManualMaterialCost ? old.materialCostSnapshot : appliedMaterialCost, materialCostSource: keepManualMaterialCost ? 'manual' : appliedMaterialCost == null ? '' : 'configuracoes', adminNotes: values.adminNotes?.trim() || '', demo: old?.demo || false };
     const appointmentId = values.appointmentId || '';
-    if (old?.appointmentId && old.appointmentId !== appointmentId) releaseVisitAppointment(old);
     if (appointmentId) {
       const appointment = data.appointments.find((item) => item.id === appointmentId);
       if (!appointment || (appointment.clientId && appointment.clientId !== client.id)) return showToast('Esse compromisso não está disponível para vínculo com esta ficha.', 'error');
+      const conflict = findAppointmentConflict({ ...appointment, date: values.date, time: values.appointmentTime || appointment.time, durationMinutes, status: 'Realizado' }, appointment.id);
+      if (conflict) return showToast(`Este atendimento conflita com “${conflict.title}” às ${conflict.time}. Nenhum registro foi alterado.`, 'error');
+    }
+    if (old?.appointmentId && old.appointmentId !== appointmentId) releaseVisitAppointment(old);
+    if (appointmentId) {
+      const appointment = data.appointments.find((item) => item.id === appointmentId);
       if (old?.appointmentId !== appointmentId) { visit.previousAppointmentStatus = appointment.status; visit.previousAppointmentClientId = appointment.clientId || ''; }
       visit.appointmentId = appointmentId; appointment.clientId = client.id; appointment.date = values.date; appointment.time = values.appointmentTime || appointment.time; appointment.durationMinutes = durationMinutes; appointment.status = 'Realizado';
     } else { visit.appointmentId = ''; visit.previousAppointmentStatus = ''; visit.previousAppointmentClientId = ''; }
@@ -1333,11 +1468,15 @@ document.addEventListener('submit', async (event) => {
   if (form.id === 'appointment-form') {
     const durationMinutes = String(values.durationMinutes || '').trim() ? Number(values.durationMinutes) : '';
     if (durationMinutes !== '' && (!Number.isInteger(durationMinutes) || durationMinutes < 1)) return showToast('Informe a duração em minutos como um número inteiro positivo.', 'error');
+    if (!values.title.trim() || !validISODate(values.date) || timeToMinutes(values.time) === null) return showToast('Confira o nome, a data e o horário do compromisso.', 'error');
     const durationHours = durationMinutes === '' ? '' : durationMinutes / 60;
     const item = { ...(data.appointments.find((record) => record.id === form.dataset.id) || {}), id: form.dataset.id || crypto.randomUUID(), title: values.title.trim(), date: values.date, time: values.time, durationMinutes, durationHours, status: values.status, clientId: values.clientId || '' };
+    const conflict = findAppointmentConflict(item, item.id);
+    if (conflict) return showToast(`Este horário conflita com “${conflict.title}” às ${conflict.time}. Escolha outro horário ou ajuste a duração.`, 'error');
     if (form.dataset.id) data.appointments = data.appointments.map((record) => record.id === item.id ? item : record);
     else data.appointments.push(item);
-    save(); agendaSelectedDate = values.date; agendaWeekOffset = agendaOffsetForDate(values.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Compromisso salvo na agenda demonstrativa.'); return;
+    if (!save()) return;
+    agendaSelectedDate = values.date; agendaWeekOffset = agendaOffsetForDate(values.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Compromisso salvo na agenda demonstrativa.'); return;
   }
   if (form.id === 'appointment-cancellation-form') {
     const appointment = data.appointments.find((item) => item.id === form.dataset.id);
@@ -1356,17 +1495,19 @@ document.addEventListener('submit', async (event) => {
     if (materialExpense > 0) expenses.push({ type: 'despesa', description: `Material utilizado em atendimento cancelado · ${procedure.name} · ${appointment.cancellationReason}`, value: materialExpense, category: 'material-cancelamento' });
     if (roomExpense > 0) expenses.push({ type: 'despesa', description: `Sala utilizada em atendimento cancelado · ${appointment.title} · ${appointment.cancellationReason}`, value: roomExpense, category: 'sala-cancelamento' });
     expenses.forEach((expense) => data.transactions.unshift({ id: crypto.randomUUID(), ...expense, date: localDate(), time: localTime(), appointmentId: appointment.id, clientId: appointment.clientId || '', cancellationReason: appointment.cancellationReason, demo: appointment.demo || false }));
-    save(); agendaSelectedDate = appointment.date; agendaWeekOffset = agendaOffsetForDate(appointment.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Cancelamento e custos registrados no histórico.'); return;
+    if (!save()) return;
+    agendaSelectedDate = appointment.date; agendaWeekOffset = agendaOffsetForDate(appointment.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Cancelamento e custos registrados no histórico.'); return;
   }
   if (form.id === 'draft-form') {
     const item = { id: form.dataset.id || crypto.randomUUID(), type: values.type, title: values.title.trim(), body: values.body.trim(), updatedAt: new Date().toISOString() };
     if (form.dataset.id) data.drafts = data.drafts.map((record) => record.id === item.id ? item : record);
     else data.drafts.unshift(item);
-    save(); document.querySelector('#modal-host').innerHTML = ''; renderPage('marketing'); showToast('Rascunho salvo neste navegador.'); return;
+    if (!save()) return;
+    document.querySelector('#modal-host').innerHTML = ''; renderPage('marketing'); showToast('Rascunho salvo neste navegador.'); return;
   }
   if (form.id === 'transaction-form') {
     const value = parseMoney(values.value);
-    if (!Number.isFinite(value) || value <= 0 || !values.date) return showToast('Informe um valor positivo válido (ex.: 1.250,50) e uma data.', 'error');
+    if (!Number.isFinite(value) || value <= 0 || !validISODate(values.date)) return showToast('Informe um valor positivo válido (ex.: 1.250,50) e uma data válida.', 'error');
     const editing = data.transactions.find((item) => item.id === form.dataset.id);
     const visitId = form.dataset.sourceVisit || editing?.sourceVisitId || '';
     const visit = data.clientVisits.find((item) => item.id === visitId);
@@ -1375,12 +1516,13 @@ document.addEventListener('submit', async (event) => {
     const method = values.paymentMethod || editing?.paymentMethod || '';
     const grossAmount = values.grossAmount === undefined || String(values.grossAmount).trim() === '' ? Number(editing?.grossAmount ?? value) : parseMoney(values.grossAmount);
     const fees = values.fees === undefined || String(values.fees).trim() === '' ? Number(editing?.fees || 0) : parseMoney(values.fees);
-    if (!Number.isFinite(grossAmount) || grossAmount < 0 || !Number.isFinite(fees) || fees < 0) return showToast('Confira o valor bruto e as taxas; use valores iguais ou maiores que zero.', 'error');
+    if (!Number.isFinite(grossAmount) || grossAmount < 0 || !Number.isFinite(fees) || fees < 0 || fees > grossAmount) return showToast('Confira o valor bruto e as taxas; as taxas não podem superar o valor bruto.', 'error');
     const record = { ...(editing || {}), id: editing?.id || crypto.randomUUID(), type, description: visit ? (editing?.description || `${visit.procedure} · recebimento`) : values.description.trim(), value, date: values.date, time: values.time || editing?.time || (editing ? '' : localTime()), clientId: visit?.clientId || (values.clientId || editing?.clientId || ''), ...(visit ? { sourceVisitId: visit.id, paymentMethod: method || visit.paymentMethod, installments: Number(values.installments || editing?.installments || visit.installments || 1), grossAmount, fees, crmGenerated: true } : {}) };
     if (editing) data.transactions = data.transactions.map((item) => item.id === editing.id ? record : item);
     else data.transactions.unshift(record);
-    if (visit) { visit.paymentIds = data.transactions.filter((item) => item.sourceVisitId === visit.id).map((item) => item.id); visit.transactionId = visit.paymentIds[0] || ''; visit.chargedTotal = receivedForVisit(visit); visit.paymentStatus = 'pago'; visit.paymentMethod = record.paymentMethod || visit.paymentMethod; visit.installments = record.installments || visit.installments; }
-    save(); document.querySelector('#modal-host').innerHTML = ''; renderPage(activePage === 'crm' ? 'crm' : 'financeiro'); showToast(editing ? 'Lançamento atualizado sem criar duplicidade.' : visit ? 'Recebimento registrado e vinculado ao atendimento.' : 'Lançamento salvo e saldo atualizado.');
+    if (visit) { visit.paymentIds = data.transactions.filter((item) => item.sourceVisitId === visit.id).map((item) => item.id); visit.transactionId = visit.paymentIds[0] || ''; visit.chargedTotal = receivedForVisit(visit); visit.paymentStatus = visit.chargedTotal > 0 ? 'pago' : 'pendente'; visit.paymentMethod = record.paymentMethod || visit.paymentMethod; visit.installments = record.installments || visit.installments; }
+    if (!save()) return;
+    document.querySelector('#modal-host').innerHTML = ''; renderPage(activePage === 'crm' ? 'crm' : 'financeiro'); showToast(editing ? 'Lançamento atualizado sem criar duplicidade.' : visit ? 'Recebimento registrado e vinculado ao atendimento.' : 'Lançamento salvo e saldo atualizado.');
   }
 });
 document.addEventListener('input', (event) => {
@@ -1475,6 +1617,17 @@ document.addEventListener('change', (event) => {
   };
   reader.onerror = () => showToast('Não foi possível abrir essa imagem.', 'error');
   reader.readAsDataURL(file);
+});
+document.addEventListener('change', (event) => {
+  if (event.target?.id !== 'backup-file-input') return;
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  restoreLocalBackup(file);
+});
+window.addEventListener('beforeunload', (event) => {
+  if (!unsavedChanges) return;
+  event.preventDefault();
+  event.returnValue = '';
 });
 function syncRouteFromBrowser() {
   const state = history.state || {};
