@@ -28,10 +28,10 @@ body { background: var(--canvas) !important; color: #d6d2cb !important; }
 .sidebar, .topbar { box-shadow: 0 2px 14px #0002; }
 .panel, .stat-card { box-shadow: 0 4px 16px #0002; }
 
-.app-shell :where(h1,h2,h3,h4):not(.art-preview *):not(.identity-preview-stack *) { color: #eeeae3 !important; }
-.app-shell p:not(.eyebrow):not(.art-preview *):not(.identity-preview-stack *) { color: #c8c4bc !important; }
-.app-shell small:not(.art-preview *):not(.identity-preview-stack *) { color: #a9a59d !important; }
-.app-shell strong:not(.art-preview *):not(.identity-preview-stack *), .app-shell b:not(.art-preview *):not(.identity-preview-stack *) { color: #e2ded6 !important; }
+.app-shell :where(h1,h2,h3,h4):not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { color: #eeeae3 !important; }
+.app-shell p:not(.eyebrow):not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { color: #c8c4bc !important; }
+.app-shell small:not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { color: #a9a59d !important; }
+.app-shell strong:not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *), .app-shell b:not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { color: #e2ded6 !important; }
 .eyebrow, .nav-label { color: #aaa69e !important; }
 .subtitle, .form-hint, .footer, .privacy-note, .breadcrumb, .record-date,
 .crm-method-note, .crm-heading p, .identity-feedback, .preview-caption,
@@ -155,8 +155,8 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 #toast { background: #2c2a27 !important; color: #e8e4dc !important; border: 1px solid #48453f; }
 
 /* Readable type scale across navigation, forms, tables, and supporting copy. */
-.app-shell :is(p:not(.eyebrow), .breadcrumb, .privacy-note, .footer, .form-hint):not(.art-preview *):not(.identity-preview-stack *) { font-size: 15px !important; line-height: 1.55; }
-.app-shell :is(small,label,button:not(.mobile-menu):not(.icon-button):not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,a,time,code,option,span:not(.nav-icon):not(.stat-icon):not(.online-dot):not(.timeline-dot):not(.wave):not(.assistant-avatar):not(.crm-return-icon):not(.crm-rank-icon):not(.agent-scaffold-symbol):not(.identity-seal span):not(.brand-copy span):not(.footer-heart),.chat-empty,.stat-head,.stat-foot,.toast):not(.art-preview *):not(.identity-preview-stack *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { font-size: 14px !important; }
+.app-shell :is(p:not(.eyebrow), .breadcrumb, .privacy-note, .footer, .form-hint):not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *) { font-size: 15px !important; line-height: 1.55; }
+.app-shell :is(small,label,button:not(.mobile-menu):not(.icon-button):not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,a,time,code,option,span:not(.nav-icon):not(.stat-icon):not(.online-dot):not(.timeline-dot):not(.wave):not(.assistant-avatar):not(.crm-return-icon):not(.crm-rank-icon):not(.agent-scaffold-symbol):not(.identity-seal span):not(.brand-copy span):not(.footer-heart),.chat-empty,.stat-head,.stat-foot,.toast):not(.art-preview *):not(.identity-preview-stack *):not(.collection-art *):not(.template-art *):not(.mini-art *):not(.campaign-art *) { font-size: 14px !important; }
 #modal-host :is(p,small,label,button:not(.modal-close),input:not([type=color]):not([type=file]),select,textarea,td,th,li,span,code,option) { font-size: 14px !important; }
 #toast { font-size: 14px !important; }
 .app-shell :is(.eyebrow,.nav-label) { font-size: 12px !important; }
@@ -342,3 +342,47 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
   padding: 7px 8px; white-space: normal; line-height: 1.35;
 }
 .finance-visits-table .finance-row-actions .secondary-button:last-child { margin-bottom: 0; }
+.finance-visits-table th { overflow-wrap:normal; }
+.finance-visits-table th:nth-child(3) { width:13%; }
+.finance-visits-table th:nth-child(9) { width:17%; }
+.table-scroll-hint { display:none; }
+@media(max-width:1200px) { .table-scroll-hint { display:block; color:#b7b2a9; } }
+
+/* Rotina e filtros: controles legíveis e tocáveis em telas pequenas. */
+.account-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+.account-bar span { color:#b7b2a9; }
+.task-panel { margin-bottom:22px; min-width:0; }
+.task-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.task-tabs .selected, .finance-filters .selected { border-color:#b7c7b8; background:#30392f; }
+.task-list { max-height:400px; overflow:auto; }
+.task-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid #393835; }
+.task-row>div { min-width:0; overflow-wrap:anywhere; }
+.task-row strong { display:block; margin-top:4px; }
+.task-row p { margin:4px 0 0; color:#b7b2a9; }
+.task-row>button { flex-shrink:0; }
+.finance-filters { padding:16px 0; }
+.finance-filter-form { display:flex; align-items:end; gap:12px; flex-wrap:wrap; margin-top:14px; }
+.finance-filter-form label { display:grid; gap:6px; min-width:0; }
+.finance-filter-form input { min-height:44px; max-width:100%; }
+.finance-filters p { color:#b7b2a9; }
+.agenda-event-actions { flex-wrap:wrap; }
+.modal-card { max-height:calc(100dvh - 32px); overflow-y:auto; }
+.modal-form :is(input,select,textarea) { min-width:0; max-width:100%; }
+@media(max-width:760px) {
+  .app-shell .content-wrap { min-width:0; }
+  .task-panel { padding:16px; }
+  .task-row { align-items:flex-start; flex-wrap:wrap; gap:10px; }
+  .task-row>button { width:100%; }
+  .task-tabs button { flex:1 1 120px; }
+  .app-shell :is(.secondary-button,.primary-button), #modal-host :is(.secondary-button,.primary-button) { min-height:44px; }
+  .finance-filter-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .finance-filter-form button { grid-column:1 / -1; }
+  .finance-filter-form input { width:100%; }
+  .modal-form .form-row { grid-template-columns:minmax(0,1fr); }
+  .modal-card { width:calc(100vw - 24px); padding:16px; }
+  #modal-host :is(input, select, textarea) { font-size:16px !important; min-height:44px; }
+  .modal-actions { flex-wrap:wrap; }
+  .modal-actions button { flex:1 1 130px; }
+  .agenda-event-actions { width:100%; display:flex; gap:8px; }
+  .agenda-event-actions button { flex:1 1 130px; }
+}

@@ -1,0 +1,41 @@
+name: Backup criptografado do banco
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+permissions:
+  contents: read
+jobs:
+  backup:
+    if: vars.BACKUP_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Conferir configuração
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$BACKUP_PASSWORD" ]; then
+            echo 'Configure SUPABASE_DB_URL e BACKUP_PASSWORD nos secrets do repositório.'
+            exit 1
+          fi
+      - name: Exportar e criptografar
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          export PGSSLMODE=require
+          docker run --rm --env DATABASE_URL --env PGSSLMODE postgres:17 sh -c 'exec pg_dump --dbname="$DATABASE_URL" --format=custom --no-owner --no-acl' | node scripts/backup-crypto.js encrypt > backup/clinic.dump.enc
+          test -s backup/clinic.dump.enc
+      - name: Guardar somente arquivo criptografado
+        uses: actions/upload-artifact@v4
+        with:
+          name: clinic-backup-${{ github.run_id }}
+          path: backup/clinic.dump.enc
+          retention-days: 30

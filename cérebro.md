@@ -19,12 +19,12 @@ O documento descreve a implementação atual e identifica planos futuros. Não r
 
 ## 3. Estado atual e limites
 
-- Aplicação web de demonstração, feita com HTML, CSS e JavaScript, sem framework e sem dependências de runtime no `package.json`.
+- Aplicação HTML/CSS/JavaScript sem framework, com demonstração local e modo de conta privada opcional. SDK Supabase 2.118.0 empacotado por esbuild; dependências fixadas no lockfile.
 - Executa no navegador; um servidor Node.js simples serve os arquivos localmente.
-- Sem autenticação, login/senha, sessão de usuário, permissões, backend de negócio ou banco de dados de produção.
-- Perfil e avatar da Tami são elementos demonstrativos. Não existe um fluxo real de logout.
-- Registros ficam no navegador usado, sem sincronização entre computadores, celulares ou perfis de navegador.
-- Agentes atuais usam cálculos, roteiros e regras locais. Não há IA generativa, WhatsApp, Canva, Google Agenda, coworking, banco ou contabilidade conectados.
+- A demonstração continua sem login. A conta privada implementa cadastro/login por e-mail e senha via Supabase, banco com RLS por proprietário e gravação com versão esperada. Projeto gratuito criado com autorização em São Paulo; esquema aplicado. Publicação/configuração online e teste real de confirmação por e-mail continuam pendentes; não declarar pronto para dados reais.
+- Perfil/avatar do painel continuam demonstrativos. Minha conta permite sair da sessão privada e voltar aos registros locais da demonstração.
+- Registros da demonstração ficam no navegador. Na conta privada, os registros são carregados do banco e ficam em memória; sessão do SDK usa sessionStorage. Recarregar volta à demonstração, com opção Retomar sessão. Não há envio automático dos registros locais para a conta.
+- Agentes atuais usam cálculos, roteiros e regras locais. Não há IA generativa, WhatsApp, Canva, Google Agenda, coworking ou contabilidade conectados. O banco da conta privada é independente dessas integrações.
 - Não há envio automático de mensagens ou publicação de posts.
 - Os dados iniciais de clientes são fictícios, com nomes genéricos como Maria, João, Ana, Camila e Pedro.
 - O ambiente público deve usar somente dados fictícios. Avisos orientam essa prática, mas a aplicação não consegue detectar com segurança se um visitante digitou dados reais.
@@ -50,7 +50,7 @@ Ordem atual das abas principais:
 
 Decisões visuais:
 
-- Usar tema escuro com boa hierarquia de texto, cores com função e aparência profissional.
+- Tema escuro com base azul profunda, superfícies azuladas, textos marfim e dourado discreto em detalhes, aplicado em `tami-theme.css`. Manter cores semânticas de status/rankings, leitura de tabelas e fontes maiores. Paleta base da marca: azul #172B43, marfim #F3EEE4, areia #D9CDB9, texto #393B3E e destaque #B6975A. Identidades já salvas não são substituídas.
 - Evitar excesso de dourado, cores de arco-íris e caixas muito saturadas de verde/vermelho.
 - Preservar leitura com fontes maiores e proporcionais, inclusive nos textos auxiliares.
 - Diferenciar rankings com cores discretas nos títulos, valores e indicadores. Pendências mais importantes recebem sinais mais fortes, acompanhados de texto.
@@ -68,6 +68,7 @@ Decisões visuais:
 - Novos cadastros consideram os últimos sete dias e excluem os clientes de exemplo `demo`.
 - Contagem e prévia das aprovações vêm da fila pendente.
 - Foram removidos indicadores fixos que inventavam crescimento, faturamento e disponibilidade.
+- Pendências da rotina reúne retornos vencidos/para hoje (informados ou estimados), pagamentos pendentes ou não informados, custos ausentes e aprovações. Filtros por categoria e atalhos para ficha/edição/revisão. Clientes/atendimentos fictícios são excluídos dessas pendências; aprovações de demonstração continuam como exemplos.
 - A prévia de Marketing ainda contém conteúdo de apresentação; não interpretar toda a página inicial como um relatório completo de gestão.
 
 ### Secretária virtual
@@ -99,11 +100,14 @@ Decisões visuais:
 - Modelos e sugestões são demonstrativos, sem IA externa. Não prometer resultados clínicos nem inventar preços/ofertas.
 - Condição comercial só deve ser usada quando informada e autorizada.
 - Conteúdo pode seguir para a fila de revisão; enviar para aprovação não publica a peça.
-- Canva e publicação em redes sociais são planos futuros.
+- Coleção Tami implementada no editor local: post de acolhimento, carrossel educativo de quatro páginas, Story de relacionamento e capa de Reels. Cada uso cria um rascunho independente com snapshot da identidade vigente, legenda e revisão profissional requerida; não altera artes antigas.
+- Editor permite guardar/remover um link HTTPS de design em canva.com, abrir externamente e enviar o link junto com o conteúdo para Aprovações. Domínios parecidos e URLs inválidas são rejeitados; links abrem com noopener/noreferrer. Não há sincronização automática de texto, arte ou status com o Canva nem publicação social.
+- Nesta conversa, o plugin Canva foi usado para enviar o monograma oficial à biblioteca e iniciar gerações de post e Story após confirmação da direção visual pelo usuário. Nenhum Brand Kit foi encontrado. A ferramenta retornou jobs em andamento e a busca posterior ainda não retornou designs salvos; seleção/conclusão no widget e links definitivos continuam pendentes. Não declarar os arquivos do Canva prontos ou vinculados ao site.
 
 ### Agenda
 
 - Visão por dia e semana, com navegação de datas, criação, edição e cancelamento de compromissos.
+- Registrar atendimento abre o formulário com cliente, procedimento, data, hora e duração do agendamento. Se não há cliente, permite selecionar ou cadastrar antes de continuar. Agendamento já realizado abre o atendimento existente; vínculo único validado antes de qualquer alteração. Salvar apresenta o resultado no Financeiro do mês do atendimento.
 - A seção Google Agenda é uma prévia local, claramente marcada como não conectada.
 - Duração é informada em minutos; padrão inicial de uma hora (60 minutos).
 - Há validação de sobreposição por intervalo, excluindo o próprio registro na edição e compromissos cancelados. Horários adjacentes são aceitos.
@@ -127,11 +131,12 @@ Decisões visuais:
 - Cobrança da sala pode ser proporcional aos minutos ou arredondada para cada hora iniciada; a escolha fica em Configurações.
 - No modo proporcional: `custo da sala = tarifa por hora × duração em minutos ÷ 60`.
 - No modo hora iniciada: `custo da sala = tarifa por hora × teto(duração em minutos ÷ 60)`.
-- Resultado por atendimento: `recebido − custo da sala − materiais`. O resumo também considera outras despesas registradas.
+- Resultado por atendimento: `recebido vinculado − sala − materiais`. O Financeiro separa caixa do período (`receitas por data de pagamento − outras despesas por data do lançamento`) e resultado dos atendimentos realizados no período (todos os recebimentos desses atendimentos, inclusive fora do intervalo, menos seus custos). Outras despesas não são descontadas novamente desse resultado.
+- Filtros Este mês (padrão), Esta semana (segunda a domingo), Todo o histórico e intervalo personalizado inclusivo. Listas e totais acompanham o período; saldos pendentes são dos atendimentos realizados no intervalo. Cálculos de agregação do novo motor usam centavos inteiros, sem substituir todos os cálculos legados.
 - Custos ausentes não equivalem a zero: o resultado fica incompleto até a informação ser preenchida. Zero só deve significar custo realmente inexistente.
 - Guardar custo/tarifa/regra aplicados ao atendimento em campos de snapshot; mudar Configurações não deve reprecificar automaticamente o passado.
-- No Resultado por atendimento, um único botão Editar abre os dados do atendimento, custos manuais de sala/materiais e o último recebimento ativo (descrição, valor, data, hora, bruto, taxas, forma e parcelas). O total recebido é somente leitura e recalculado ao salvar. Custos em branco continuam desconhecidos; ajustes afetam somente este atendimento. Despesas e lançamentos conserva os botões Editar e Cancelar.
-- O fluxo simplificado registra o efetivamente recebido; não inventar um valor contratado ou saldo devedor quando esse valor não foi informado. `chargedTotal` é um campo herdado usado na implementação: conferir sua semântica antes de expandir cobranças/parcelas.
+- No Resultado por atendimento, um único botão Editar abre os dados do atendimento, custos manuais de sala/materiais e o último recebimento ativo (descrição, valor, data, hora, bruto, taxas, forma e parcelas). Quando há recebimentos vinculados, o total recebido é somente leitura e recalculado ao salvar; quando ainda não há, esse campo permite informar o primeiro pagamento. Custos em branco continuam desconhecidos; ajustes afetam somente este atendimento. Despesas e lançamentos conserva os botões Editar e Cancelar.
+- O formulário aceita pagamento ainda não informado (campo vazio), zero informado, pagamento parcial e valor combinado opcional (`agreedTotal`). Só há dívida monetária quando o combinado foi informado; sem ele, `chargedTotal` acompanha o recebido, preservando a semântica legada. `paymentConfirmed=false` sinaliza pagamento desconhecido sem inventar dívida. Novos recebimentos preservam o combinado e reduzem o saldo. Custos podem vir das Configurações ou ser preenchidos para o atendimento. Campos vazios permanecem desconhecidos.
 - Recebimentos e despesas exigem valor positivo e data válida. Taxas não podem superar o valor bruto informado.
 - Resultado por atendimento permanece em tabela em todas as larguras, com cabeçalhos visíveis, valores alinhados à direita, data/hora e números sem quebra e botões empilhados na coluna de ações. Largura mínima de 980px; em painéis menores, rolagem horizontal restrita à tabela.
 - Data e hora começam preenchidas em novos lançamentos. Nas tabelas do Financeiro, mostrar somente a data e uma hora abaixo, sem frases auxiliares e sem quebrar os números. No resultado por atendimento, usar a hora do último recebimento ativo ou, se ausente, a hora do atendimento; manter a data do atendimento.
@@ -189,7 +194,8 @@ Antes de integrar: definir escopo mínimo de dados, permissões, aprovação, cu
 - Em problemas de leitura, tenta recuperar a cópia anterior e oferece download do conteúdo preservado para recuperação técnica quando disponível.
 - Backups locais compartilham os riscos do mesmo navegador: limpar os dados do site pode remover todas as cópias. O JSON exportado não é criptografado.
 - A validação de importação é básica; dados malformados e recuperação completa de todas as relações ainda merecem testes mais abrangentes.
-- Não existe controle de concorrência entre abas, trilha completa de auditoria ou proteção de banco de dados de produção.
+- Na demonstração não há controle de concorrência. Na conta privada, documentos têm versão e gravação transacional com bloqueio otimista; conflito ou falha bloqueia a fila de envios e exige exportar/recarregar, sem fusão automática. RLS restringe documentos e versões anteriores ao proprietário. Não há permissões de equipe nem trilha completa de auditoria.
+- Na conta, até 20 versões anteriores são preservadas automaticamente no mesmo banco e podem ser restauradas. Backup externo criptografado e publicação por artifacts preparados em workflows, mas não publicados/ativados nesta entrega; precisam de configuração protegida e teste real de restauração. Guia: `CONTA-E-BACKUP.md`.
 - A busca anterior por padrões comuns de segredos nos arquivos/histórico Git disponível não encontrou candidatos. Não foi uma auditoria de segurança exaustiva.
 - Requisitos antes de produção estão em [SEGURANCA-E-PRODUCAO.md](SEGURANCA-E-PRODUCAO.md).
 
@@ -208,7 +214,13 @@ Antes de integrar: definir escopo mínimo de dados, permissões, aprovação, cu
 | `crm.css`, `agenda.css`, `identity.css`, `strategy.css`, `judicial.css` | Estilos das áreas |
 | `dark-theme.css`, `readability.css`, `professional-theme.css` | Tema escuro, leitura e ajustes visuais; ordem de carregamento importa |
 | `assets/` | Recursos visuais, incluindo o monograma oficial |
-| `server.js` | Servidor estático Node.js, padrão `127.0.0.1:3000`; aceita variável `PORT` |
+| `server.js` | Servidor local com lista de arquivos públicos permitidos, bloqueio de `.env`/Git/testes/banco, configuração pública do Supabase via endpoint e sem cache; padrão `127.0.0.1:3000` |
+| `tami-theme.css`, `tami-collection.js` | Identidade visual do painel e modelos locais de Marketing |
+| `workflow-engine.js` | Períodos, totais financeiros e pendências |
+| `src/cloud-store.js`, `assets/cloud-store.js`, `app-cloud.js` | SDK empacotado, autenticação, fila de gravação e interface da conta |
+| `database/setup.sql` | Estrutura aplicada no projeto novo: documentos, versões, políticas RLS e RPC transacional |
+| `scripts/`, `.github/workflows/` | Build público e backup externo criptografado preparado |
+| `browser-tests/` | Testes Chromium e capturas em larguras de celular/tablet/desktop |
 | `test/` | Testes com `node:test`, incluindo execução do frontend em ambiente simulado |
 | `AGENTS.md` | Instruções permanentes para agentes que trabalham neste repositório |
 
@@ -225,14 +237,14 @@ O servidor estático é para desenvolvimento local; não é uma infraestrutura p
 
 ## 9. Verificação e pendências conhecidas
 
-Última execução automatizada em 02/11/2026, após os ajustes de data/hora e largura do Financeiro: **26 testes passaram, 0 falharam**. `node --check app.js` também passou. A mudança de layout ainda precisa de conferência visual no navegador.
+Verificação de 02/11/2026 nesta entrega: **32 testes Node e 9 testes Chromium aprovados**, sintaxe JavaScript, build e `git diff --check` aprovados. Capturas inspecionadas de agenda, login, atendimento, financeiro, Marketing e editor, em larguras emuladas de 360/390/768/1440px (Marketing/editor: 390 e 1440px); não houve teste em aparelho físico. Login/envio/conflito no navegador foram testados com API simulada; RLS, gravação, versões e conflito também foram exercitados no banco real com usuários sintéticos e rollback. Advisor de segurança do projeto sem alertas. Cadastro/confirmação por e-mail reais e backup externo agendado/restauração de dump do projeto não foram testados.
 
 Cobertura existente inclui motores de CRM/Marketing/secretária, navegação de todas as áreas, identidade visual, exportação em ambiente simulado, estratégias e aprovações, cadastro/atendimento/recebimentos, edição sem duplicidade, persistência, recuperação e rejeição de sobreposição na agenda.
 
 Limites e próximos trabalhos:
 
 - Os testes de interface usam elementos simulados; não equivalem a uma inspeção de todos os botões em navegador real.
-- A revisão visual em celular e tablet e a avaliação completa de acessibilidade permanecem pendentes. A tentativa anterior de usar o navegador foi interrompida porque a ferramenta não conseguiu confirmar a URL da janela com segurança.
+- Revisão em dispositivos físicos e avaliação completa de acessibilidade continuam pendentes; as capturas atuais são de Chromium em larguras emuladas.
 - Revisar foco, teclado, modais, leitura por tecnologia assistiva, contraste, ampliação e tabelas em telas estreitas.
 - Ampliar testes de cancelamentos cruzados entre agenda/financeiro, edição de snapshots, importação/restauração e concorrência de abas.
 - Conferir consistência entre indicadores que incluem exemplos e indicadores que os excluem, tornando os critérios claros ao usuário.
@@ -283,3 +295,9 @@ Se a alteração for apenas documental, informar isso; não inventar execução 
 - **02/11/2026 — atualização do GitHub solicitada:** entrega na `main` dos ajustes da tabela financeira, data/hora compactas e edição unificada, junto com teste e memória. Verificações: 26 testes aprovados, sintaxe JavaScript e diff sem erros; revisão visual segue pendente. Confirmar o envio pelo hash remoto.
 
 - **02/11/2026 — cache do site publicado:** confirmado que GitHub Pages publicou o commit `12217af` com sucesso e que HTML, JavaScript e CSS remotos correspondem aos locais (normalizando finais de linha). Adicionada versão nos links dos arquivos CSS/JS locais em `index.html` para evitar reutilização de arquivos antigos em cache. Registros locais são independentes entre localhost e GitHub Pages; não há sincronização. Conferência visual ainda pendente.
+
+- **02/11/2026 — rotina completa antes do Canva:** Agenda ligada ao registro sem repetir dados, pagamento parcial/desconhecido e combinado opcional, custos e resultado na mesma rotina; filtros financeiros e central de pendências. Conta privada implementada e projeto Supabase gratuito criado com autorização, esquema/RLS aplicados e exercitados com rollback. Histórico de 20 versões, backup externo criptografado preparado, servidor local protegido e builds configurados. Verificação e limites na seção 9. Sem envio desta entrega ao GitHub; ativação online/e-mail/backup externo ainda pendentes.
+
+- **02/11/2026 — identidade e coleção Tami:** refinado o painel com azul profundo, marfim e acentos discretos; quatro modelos editáveis locais e vínculo manual de design Canva com revisão. Corrigidos contraste das prévias claras e transbordamento do carrossel no celular. 32 testes Node e 9 testes Chromium aprovados; após o acabamento visual, os 2 testes de Marketing também passaram novamente. Monograma enviado ao Canva; gerações iniciadas, sem confirmação de designs salvos. Sem envio ao GitHub nesta entrega.
+
+- **02/11/2026 — envio completo solicitado pelo usuário:** entrega dos ajustes de rotina/Financeiro/pendências, conta privada e esquema do banco, coleção Tami e visual, testes, build e workflows preparados. Reexecutados 32 testes Node com sucesso; verificação do diff e busca por padrões comuns de credenciais sem candidatos nos arquivos destinados ao envio. `.env`, caches, dependências instaladas e artifacts locais ficam fora do Git. As configurações de autenticação online e backup externo descritas no guia continuam pendentes. Confirmar o commit e a publicação pelo GitHub após o envio.

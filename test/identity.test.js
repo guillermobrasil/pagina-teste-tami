@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { webcrypto } = require('node:crypto');
 
+const workflowSource = fs.readFileSync(path.join(__dirname, '..', 'workflow-engine.js'), 'utf8');
 const source = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 const engineSource = fs.readFileSync(path.join(__dirname, '..', 'marketing-engine.js'), 'utf8');
 const secretarySource = fs.readFileSync(path.join(__dirname, '..', 'secretaria-engine.js'), 'utf8');
@@ -79,7 +80,7 @@ function createApp(store = new Map()) {
   const sandbox = {
     document, localStorage: { getItem(key) { return store.get(key) || null; }, setItem(key, value) { store.set(key, value); } },
     location, history, crypto: webcrypto, Intl, Date, JSON, Math, Number, String, Object, Array, RegExp, Promise, Blob,
-    URL: { createObjectURL() { return 'blob:demo'; }, revokeObjectURL() {} },
+    URL: class extends URL { static createObjectURL() { return 'blob:demo'; } static revokeObjectURL() {} },
     Image: class { constructor() { this.width = 100; this.height = 100; } set src(_value) { this.onload?.(); } },
     FileReader: class {
       readAsDataURL() { this.result = 'data:image/png;base64,aGVsbG8='; this.onload(); }
@@ -88,6 +89,8 @@ function createApp(store = new Map()) {
     setTimeout() { return 1; }, clearTimeout() {}, console,
     window: { EsteticaMarketingEngine: store.engine || null, SecretariaLocal: store.secretary || null, CrmLocal: store.crm || null, confirm() { return true; }, addEventListener(type, callback) { windows[type] = callback; } }
   };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'tami-collection.js'), 'utf8'), sandbox);
+  vm.runInNewContext(workflowSource, sandbox, { filename: 'workflow-engine.js' });
   vm.runInNewContext(source, sandbox, { filename: 'app.js' });
 
   function emit(type, target, extra = {}) {
@@ -522,4 +525,30 @@ test('financeiro edita atendimento, custos e recebimento juntos sem duplicar', a
   assert.equal(receipts[0].value, 400); assert.equal(receipts[0].time, '14:20');
   assert.equal(receipts[0].description, 'Recebimento corrigido');
   assert.equal(receipts[0].paymentMethod, 'dinheiro');
+});
+
+test('coleção Tami cria rascunhos separados e leva apenas links Canva válidos à revisão', async () => {
+  const app = createApp(); app.navigate('marketing');
+  assert.match(app.document.querySelector('#workspace-view').innerHTML,/Uma identidade. Muitas conversas/);
+  app.button('new-tami-model',{model:'primeira-conversa'});
+  let state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const draft = state.drafts.find(d=>d.collectionKey==='primeira-conversa');
+  assert.equal(draft.slides.length,4); assert.equal(draft.requiresProfessionalReview,true);
+  assert.equal(draft.brand.logo,'assets/monograma-tc.png');
+  const form = new FakeElement({id:draft.id}); form.id='canva-link-form'; form.selectorMatches=['form'];
+  form.values={canvaUrl:'https://www.canva.com.evil.example/design/TEST123/edit'};
+  await app.emitAsync('submit',form);
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  assert.equal(state.drafts.find(d=>d.id===draft.id).canvaUrl,'');
+  form.values={canvaUrl:'https://www.canva.com/design/TEST123/edit'};
+  await app.emitAsync('submit',form);
+  app.button('submit-to-approval');
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const approval = state.approvals.find(a=>a.title===draft.title);
+  assert.equal(approval.canvaUrl,form.values.canvaUrl);
+  assert.equal(approval.status,'Pendente'); assert.equal(approval.requiresProfessionalReview,true);
+  app.navigate('marketing'); app.button('new-tami-model',{model:'primeira-conversa'});
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  assert.equal(state.drafts.filter(d=>d.collectionKey==='primeira-conversa').length,2);
+  assert.notEqual(state.drafts[0].id,draft.id);
 });

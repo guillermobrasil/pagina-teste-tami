@@ -1,0 +1,9 @@
+node_modules/
+.cache/
+.env
+.env.*
+!.env.example
+cloud-config.local.js
+dist/
+test-results/
+playwright-report/

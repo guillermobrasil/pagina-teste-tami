@@ -1,0 +1,22 @@
+const {test,expect} = require('@playwright/test');
+for (const width of [390,1440]) test(`coleção de Marketing, Canva e revisão em ${width}px`, async ({page})=>{
+  await page.setViewportSize({width,height:900});
+  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/#marketing');
+  await expect(page.locator('.collection-card')).toHaveCount(4);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await page.screenshot({path:`.cache/visual/brand-${width}-marketing.png`,fullPage:true});
+  await page.locator('[data-model="primeira-conversa"]').first().click();
+  await expect(page.locator('.slide-thumb')).toHaveCount(4);
+  await expect(page.locator('.canva-bridge')).toBeVisible();
+  await page.locator('#canva-link-form [name=canvaUrl]').fill('https://www.canva.com/design/TEST123/edit');
+  await page.locator('#canva-link-form').getByRole('button',{name:'Salvar link'}).click();
+  await expect(page.getByRole('link',{name:'Abrir arte no Canva ↗'})).toHaveAttribute('rel','noopener noreferrer');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await page.screenshot({path:`.cache/visual/brand-${width}-editor.png`,fullPage:true});
+  await page.locator('.canva-bridge').getByRole('button',{name:'Enviar para revisão'}).click();
+  await expect(page.getByRole('link',{name:'Conferir arte no Canva ↗'})).toBeVisible();
+  const review=page.locator('.record-card').filter({hasText:'Sua primeira conversa, com tranquilidade.'});
+  await expect(review.getByRole('button',{name:'Confirmar revisão e aprovar'})).toBeDisabled();
+  expect(errors).toEqual([]);
+});
