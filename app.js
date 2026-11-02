@@ -37,7 +37,7 @@ function makeCRMExamples() {
     { id: 'crm-demo-client-01', name: 'Maria', contact: '', firstVisit: offsetDate(-540), nextReturnDate: offsetDate(-4), notes: 'Registro fictício para demonstração.', demo: true, active: true },
     { id: 'crm-demo-client-02', name: 'João', contact: '', firstVisit: offsetDate(-240), nextReturnDate: offsetDate(12), notes: 'Registro fictício para demonstração.', demo: true, active: true },
     { id: 'crm-demo-client-03', name: 'Ana', contact: '', firstVisit: `${localDate().slice(0, 7)}-01`, nextReturnDate: '', notes: 'Registro fictício para demonstração.', demo: true, active: true },
-    { id: 'crm-demo-client-04', name: 'Júlia', contact: '', firstVisit: offsetDate(-120), nextReturnDate: offsetDate(15), notes: 'Registro fictício para demonstração.', demo: true, active: true },
+    { id: 'crm-demo-client-04', name: 'Camila', contact: '', firstVisit: offsetDate(-120), nextReturnDate: offsetDate(15), notes: 'Registro fictício para demonstração.', demo: true, active: true },
     { id: 'crm-demo-client-05', name: 'Pedro', contact: '', firstVisit: offsetDate(-75), nextReturnDate: '', notes: 'Registro fictício para demonstração.', demo: true, active: true }
   ];
   const visits = [
@@ -153,7 +153,7 @@ const demoClientNames = new Map([
   ['crm-demo-client-01', 'Maria'],
   ['crm-demo-client-02', 'João'],
   ['crm-demo-client-03', 'Ana'],
-  ['crm-demo-client-04', 'Júlia'],
+  ['crm-demo-client-04', 'Camila'],
   ['crm-demo-client-05', 'Pedro']
 ]);
 data.clients.forEach((client) => {
