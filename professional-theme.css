@@ -269,6 +269,14 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .secretary-voice-plan { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; }
 .secretary-voice-plan button:disabled { opacity:.72; cursor:not-allowed; }
 .secretary-voice-plan small { color:#b2ada4 !important; }
+.help-guide { display:grid; gap:12px; }
+.help-guide>p { margin:0; color:#c8c4bc !important; }
+.help-guide ol { display:grid; gap:10px; margin:0; padding-left:22px; }
+.help-guide li { padding-left:4px; color:#bdb8ae; }
+.help-guide li strong,.help-guide li span { display:block; }
+.help-guide li strong { color:#e0dbd2 !important; }
+.help-guide li span { margin-top:2px; color:#b7b2a9 !important; }
+.help-guide-actions { display:flex; flex-wrap:wrap; gap:8px; padding-top:4px; }
 
 /* A cor do título, do ícone e do indicador identifica o tipo de ranking. */
 .app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(1) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#bfd0e2 !important; }
