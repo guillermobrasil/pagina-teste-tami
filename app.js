@@ -1,6 +1,6 @@
 const pageNames = {
   inicio: 'Visão geral', secretaria: 'Secretária virtual', crm: 'CRM de Clientes', marketing: 'Marketing', identidade: 'Identidade Visual',
-  agenda: 'Agenda', aprovacoes: 'Aprovações', financeiro: 'Financeiro'
+  agenda: 'Agenda', aprovacoes: 'Aprovações', financeiro: 'Financeiro', juridico: 'Agente Jurídico'
 };
 const pageCopy = {
   inicio: ['Bom dia, Tami Linda', 'Aqui está o resumo do seu espaço hoje.'],
@@ -10,7 +10,8 @@ const pageCopy = {
   identidade: ['Identidade Visual', 'Configure as cores, fontes e o logotipo da sua marca.'],
   agenda: ['Sua agenda', 'Gerencie compromissos de demonstração neste navegador.'],
   aprovacoes: ['Central de aprovações', 'Aprovar ou rejeitar só altera o status nesta demonstração.'],
-  financeiro: ['Seu financeiro', 'Lançamentos e saldo fictícios, salvos neste navegador.']
+  financeiro: ['Seu financeiro', 'Lançamentos e saldo fictícios, salvos neste navegador.'],
+  juridico: ['Agente Jurídico', 'Organize temas judiciais e regulatórios da Biomedicina Estética.']
 };
 const storageKey = 'estetica-pro-ia-demo-v1';
 const defaultIdentity = {
@@ -216,6 +217,12 @@ function renderPage(page) {
   if (page === 'agenda') view.innerHTML = renderAgenda();
   if (page === 'aprovacoes') view.innerHTML = renderApprovals();
   if (page === 'financeiro') view.innerHTML = renderFinance();
+  if (page === 'juridico') view.innerHTML = renderJudicialAgent();
+}
+function renderJudicialAgent(result = null) {
+  const contextHtml = result?.context ? `<div class="judicial-user-summary"><strong>Resumo para sua consulta</strong><p>${escapeHTML(result.context)}</p></div>` : '';
+  const resultHtml = result ? `<section class="judicial-result panel" aria-live="polite"><div class="panel-heading"><div><p class="eyebrow">ROTEIRO INICIAL · ${escapeHTML(result.categoryLabel)}</p><h2>${escapeHTML(result.title)}</h2></div><span class="judicial-result-icon">✓</span></div>${contextHtml}<p class="judicial-summary">${escapeHTML(result.summary)}</p><div class="judicial-columns"><div><h3>Separe para análise</h3><ul>${result.documents.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div><div><h3>Próximos passos</h3><ul>${result.steps.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div></div><div class="judicial-caution"><strong>Atenção ao prazo e à estratégia.</strong> Se recebeu intimação, notificação formal ou há risco imediato, confira o prazo no documento original e procure advogado habilitado na área. Este roteiro não avalia o mérito nem define uma defesa.</div><button class="secondary-button" type="button" data-action="judicial-clear">Organizar outra situação</button></section>` : '';
+  return `<div class="judicial-page"><section class="judicial-hero"><div><p class="eyebrow">BIOMEDICINA ESTÉTICA · APOIO JURÍDICO</p><h2>Entenda o cenário. Organize os documentos. Prepare a conversa com seu advogado.</h2><p>Um roteiro inicial para questões profissionais, éticas, sanitárias e judiciais da atuação em estética avançada.</p></div><span class="judicial-mark">§</span></section><div class="notice-box judicial-notice"><strong>Protótipo demonstrativo:</strong> as respostas são roteiros locais e gerais, não são parecer jurídico nem análise de legislação por IA. Não informe nomes, dados de pacientes, números de processo ou documentos sigilosos.</div><section class="panel judicial-intake"><div class="panel-heading"><div><p class="eyebrow">ORGANIZADOR DE CASOS</p><h2>O que você precisa organizar?</h2></div><span class="ai-tag">LOCAL · SEM ENVIO</span></div><form id="judicial-intake-form" class="judicial-form"><label for="judicial-category">Tipo de situação</label><select id="judicial-category" name="category" required><option value="">Selecione uma opção</option><option value="ethical">Conselho profissional ou processo ético</option><option value="complaint">Reclamação, dano ou notificação extrajudicial</option><option value="records">Consentimento, prontuário ou privacidade</option><option value="advertising">Publicidade profissional e redes sociais</option><option value="sanitary">Fiscalização sanitária ou regularização do espaço</option><option value="contract">Contrato, parceria ou prestação de serviços</option><option value="other">Outra questão judicial ou regulatória</option></select><label for="judicial-context">Resumo sem dados identificáveis <small>Opcional · não inclua nomes, contatos, dados de saúde ou número de processo</small></label><textarea id="judicial-context" name="context" rows="4" maxlength="700" placeholder="Ex.: recebi uma solicitação formal do conselho e preciso organizar os documentos e os prazos."></textarea><div class="judicial-form-footer"><p>O resumo fica somente nesta tela: não é salvo nem enviado a um serviço externo.</p><button class="primary-button" type="submit"><span>✦</span> Montar roteiro</button></div></form></section>${resultHtml}<section class="judicial-resources"><div class="judicial-section-heading"><div><p class="eyebrow">CONSULTA DIRETA</p><h2>Fontes oficiais para conferir</h2></div><p>Confira atualizações e regras do seu CRBM antes de tomar decisões.</p></div><div class="judicial-source-grid"><a class="panel judicial-source" href="https://cfbm.gov.br/resolucoes-cfbm/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Resoluções do Conselho Federal de Biomedicina</strong><small>Ver legislação profissional ↗</small></a><a class="panel judicial-source" href="https://cfbm.gov.br/duvidas-frequentes/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Dúvidas frequentes sobre habilitação e atuação</strong><small>Consultar orientações ↗</small></a><a class="panel judicial-source" href="https://www.gov.br/anvisa/pt-br/centraisdeconteudo/publicacoes/servicosdesaude/notas-tecnicas/notas-tecnicas-vigentes/nota-tecnica-no-2-2024-sei-ggtes-dire3-anvisa-esclarecimentos-sobre-os-servicos-de-estetica-e-atendimento-as-normas-sanitarias-aplicaveis-a-esses-servicos" target="_blank" rel="noopener noreferrer"><span>ANVISA</span><strong>Nota Técnica 2/2024 sobre serviços de estética</strong><small>Ver orientação sanitária ↗</small></a><a class="panel judicial-source" href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener noreferrer"><span>LEGISLAÇÃO FEDERAL</span><strong>Lei Geral de Proteção de Dados (LGPD)</strong><small>Ler texto oficial ↗</small></a></div></section><p class="judicial-disclaimer">Informação geral para organização. Regras podem mudar e também dependem do CRBM, da Vigilância Sanitária local e dos fatos concretos. Procure orientação jurídica individual antes de responder a notificações ou adotar uma estratégia.</p></div>`;
 }
 function renderChat() {
   const messages = data.chat.map((item) => `<div class="chat-message ${item.from === 'you' ? 'from-you' : 'from-assistant'}"><small>${item.from === 'you' ? 'Você' : 'Secretária demonstrativa'} · ${escapeHTML(item.time)}</small><p>${escapeHTML(item.text)}</p></div>`).join('');
@@ -676,6 +683,7 @@ document.addEventListener('click', (event) => {
   if (!button) return;
   const { action, id } = button.dataset;
   if (action === 'menu') { document.querySelector('#sidebar').classList.toggle('open'); return; }
+  if (action === 'judicial-clear') { renderPage('juridico'); return; }
   if (action === 'identity-preview') { updateIdentityPreviews(); showToast('Pré-visualização atualizada. Salve para usar nos novos modelos.'); return; }
   if (action === 'identity-save') {
     const previous = data.identity;
@@ -869,6 +877,13 @@ document.addEventListener('submit', async (event) => {
   if (!form.matches('form')) return;
   event.preventDefault();
   const values = Object.fromEntries(new FormData(form));
+  if (form.id === 'judicial-intake-form') {
+    const guide = window.EsteticaJudicialEngine?.createGuide(values.category, values.context || '');
+    if (!guide) return showToast('Não foi possível montar o roteiro. Atualize a página e tente novamente.', 'error');
+    document.querySelector('#workspace-view').innerHTML = renderJudicialAgent(guide);
+    document.querySelector('.judicial-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   if (form.id === 'strategy-input-form') {
     const topic = values.topic.trim();
     if (topic.length < 2) return showToast('Digite um assunto com pelo menos 2 caracteres.', 'error');
