@@ -13,7 +13,7 @@
       purpose: 'Apoiar a rotina da clínica consultando o que for necessário e preparando tarefas para sua aprovação.',
       current: 'Responde por regras locais sobre agenda, lançamentos, aprovações e Marketing. Não envia mensagens, não altera dados por conta própria e não orienta condutas clínicas.',
       scopes: ['Agenda', 'Fichas de clientes', 'Aprovações', 'Resumo financeiro', 'Marketing'],
-      integrations: ['Google Agenda', 'Agenda do coworking', 'Canais de mensagem (futuro)']
+      integrations: ['Google Agenda', 'Agenda do coworking', 'Canais de mensagem (futuro)', 'Entrada por voz opcional (futuro)']
     },
     crm: {
       name: 'Estrategista de relacionamento', area: 'AGENTE DE RELACIONAMENTO', symbol: '◎',

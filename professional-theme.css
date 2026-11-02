@@ -252,3 +252,30 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .app-shell .crm-page .crm-rank-item strong { color:#d8c69f !important; font-size:15px !important; }
 .app-shell .crm-page .crm-rank-track { height:6px !important; background:#393b37 !important; }
 .app-shell .crm-page .crm-rank-track span { background:linear-gradient(90deg,#718b76,#a9bea9) !important; }
+.crm-rank-client { display:grid; gap:2px; min-width:0; }
+.crm-rank-demo,.crm-occurrence-demo { color:#b9aa8d !important; font-size:10px !important; font-weight:650; letter-spacing:.04em; }
+.crm-occurrence-ranking .crm-rank-icon { color:#d8a39a !important; border-color:#6b4c47 !important; background:#342a28 !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-high .crm-rank-position { color:#f0b0a8 !important; background:#482f2e !important; border-color:#865450 !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-high strong { color:#f0b0a8 !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-high .crm-rank-track span { background:linear-gradient(90deg,#a95e58,#df9388) !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-position { color:#e5c48e !important; background:#393328 !important; border-color:#6b5938 !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-medium strong { color:#e5c48e !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-track span { background:linear-gradient(90deg,#9d8151,#cfad70) !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-low .crm-rank-position { color:#bac5b7 !important; background:#2c302b !important; border-color:#465044 !important; }
+.crm-occurrence-ranking .crm-rank-item.priority-low .crm-rank-track span { background:linear-gradient(90deg,#607363,#8da18f) !important; }
+.crm-rank-open { margin-top:14px; color:#e1b3aa !important; border-color:#654844 !important; }
+.crm-rank-open:hover { background:#332a28 !important; border-color:#95645d !important; }
+.crm-occurrence-demo { display:block; margin-top:3px; }
+.secretary-voice-plan { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.secretary-voice-plan button:disabled { opacity:.72; cursor:not-allowed; }
+.secretary-voice-plan small { color:#b2ada4 !important; }
+
+/* A cor do título, do ícone e do indicador identifica o tipo de ranking. */
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(1) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#bfd0e2 !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(2) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#b9d0ba !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(3) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#d7c39d !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(4) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#cabbdf !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card:nth-child(5) :is(.crm-rank-icon,.crm-rank-card-heading h4,.crm-rank-item strong) { color:#acd0cb !important; }
+.app-shell .crm-page .crm-occurrence-ranking .crm-rank-card-heading h4 { color:#e1a69d !important; }
+.app-shell .crm-page .crm-occurrence-ranking .crm-rank-item.priority-high strong { color:#f0b0a8 !important; }
+.app-shell .crm-page .crm-occurrence-ranking .crm-rank-item.priority-medium strong { color:#e5c48e !important; }

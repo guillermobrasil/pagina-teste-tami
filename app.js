@@ -36,7 +36,9 @@ function makeCRMExamples() {
   const clients = [
     { id: 'crm-demo-client-01', name: 'Maria', contact: '', firstVisit: offsetDate(-540), nextReturnDate: offsetDate(-4), notes: 'Registro fictício para demonstração.', demo: true, active: true },
     { id: 'crm-demo-client-02', name: 'João', contact: '', firstVisit: offsetDate(-240), nextReturnDate: offsetDate(12), notes: 'Registro fictício para demonstração.', demo: true, active: true },
-    { id: 'crm-demo-client-03', name: 'Ana', contact: '', firstVisit: `${localDate().slice(0, 7)}-01`, nextReturnDate: '', notes: 'Registro fictício para demonstração.', demo: true, active: true }
+    { id: 'crm-demo-client-03', name: 'Ana', contact: '', firstVisit: `${localDate().slice(0, 7)}-01`, nextReturnDate: '', notes: 'Registro fictício para demonstração.', demo: true, active: true },
+    { id: 'crm-demo-client-04', name: 'Júlia', contact: '', firstVisit: offsetDate(-120), nextReturnDate: offsetDate(15), notes: 'Registro fictício para demonstração.', demo: true, active: true },
+    { id: 'crm-demo-client-05', name: 'Pedro', contact: '', firstVisit: offsetDate(-75), nextReturnDate: '', notes: 'Registro fictício para demonstração.', demo: true, active: true }
   ];
   const visits = [
     { id: 'crm-demo-visit-01', clientId: clients[0].id, date: offsetDate(-540), procedure: 'Atendimento demonstrativo 01', appointmentId: '', transactionId: 'crm-demo-payment-01', paymentIds: ['crm-demo-payment-01'], chargedTotal: 650, paymentStatus: 'pago', paymentMethod: 'pix', installments: 1, adminNotes: '', demo: true },
@@ -50,7 +52,13 @@ function makeCRMExamples() {
   const amounts = [650, 400, 300, 375, 450, 220, 180];
   visits.forEach((visit, index) => { if (index) { visit.paymentIds = [visit.transactionId]; visit.chargedTotal = amounts[index]; visit.paymentStatus = 'pago'; visit.paymentMethod = index % 3 === 0 ? 'dinheiro' : index % 3 === 1 ? 'cartao' : 'pix'; visit.installments = visit.paymentMethod === 'cartao' ? 3 : 1; visit.adminNotes = ''; } });
   const transactions = visits.map((visit, index) => ({ id: visit.transactionId, type: 'receita', description: `${visit.procedure} · fictício`, value: amounts[index], grossAmount: amounts[index], fees: 0, date: visit.date, clientId: visit.clientId, sourceVisitId: visit.id, paymentMethod: visit.paymentMethod, installments: visit.installments, demo: true }));
-  return { clients, visits, transactions, occurrences: [] };
+  const occurrences = [
+    { id: 'crm-demo-occurrence-01', clientId: clients[3].id, date: offsetDate(-7), category: 'Pendência de pagamento', description: 'Exemplo fictício: conferir se o recebimento do atendimento foi registrado.', actions: 'Verificar a ficha e o Financeiro antes de qualquer contato.', status: 'Pendente', responsible: 'Tami', demo: true },
+    { id: 'crm-demo-occurrence-02', clientId: clients[3].id, date: offsetDate(-3), category: 'Cancelamento recorrente', description: 'Exemplo fictício: revisar os registros de remarcação próximos ao horário reservado.', actions: 'Conferir as datas e combinar com clareza as condições para novas marcações.', status: 'Pendente', responsible: 'Tami', demo: true },
+    { id: 'crm-demo-occurrence-03', clientId: clients[3].id, date: offsetDate(-2), category: 'Outra ocorrência', description: 'Exemplo fictício: concluir a conferência das condições de remarcação registradas.', actions: 'Revisar a anotação administrativa e atualizar a ficha.', status: 'Pendente', responsible: 'Tami', demo: true },
+    { id: 'crm-demo-occurrence-04', clientId: clients[4].id, date: offsetDate(-1), category: 'Outra ocorrência', description: 'Exemplo fictício: retorno solicitado, ainda sem data combinada.', actions: 'Consultar a agenda e registrar o próximo passo acordado.', status: 'Pendente', responsible: 'Tami', demo: true }
+  ];
+  return { clients, visits, transactions, occurrences };
 }
 const makeInitialData = () => {
   const crm = makeCRMExamples();
@@ -76,7 +84,7 @@ const makeInitialData = () => {
     ...crm.transactions
   ],
   clients: crm.clients, clientVisits: crm.visits, occurrences: crm.occurrences,
-  chat: [], strategyPlans: [], whatsappSettings: { monthlyMessageCap: '', monthlyAiCap: '', requireApproval: true }, whatsappDrafts: []
+  chat: [], strategyPlans: [], whatsappSettings: { monthlyMessageCap: '', monthlyAiCap: '', requireApproval: true }, whatsappDrafts: [], demoOccurrenceExamplesAdded: true
   });
 };
 function loadData() {
@@ -95,6 +103,14 @@ function loadData() {
       saved.whatsappSettings ||= { monthlyMessageCap: '', monthlyAiCap: '', requireApproval: true };
       if (!Array.isArray(saved.whatsappDrafts)) saved.whatsappDrafts = [];
       saved.settings ||= defaultSettings();
+      if (!saved.demoOccurrenceExamplesAdded) {
+        const examples = makeCRMExamples();
+        const clientIds = new Set(saved.clients.map((item) => item.id));
+        saved.clients.push(...examples.clients.filter((item) => item.demo && !clientIds.has(item.id)));
+        const occurrenceIds = new Set(saved.occurrences.map((item) => item.id));
+        saved.occurrences.push(...examples.occurrences.filter((item) => !occurrenceIds.has(item.id)));
+        saved.demoOccurrenceExamplesAdded = true;
+      }
       saved.clientVisits.forEach((visit) => {
         if (!Array.isArray(visit.paymentIds)) visit.paymentIds = visit.transactionId ? [visit.transactionId] : [];
         const legacyReceipt = saved.transactions.find((item) => item.id === visit.transactionId);
@@ -112,6 +128,7 @@ function loadData() {
       saved.transactions.forEach((item) => {
         if (demoVisitIds.has(item.sourceVisitId) || /demonstrativ|fict[ií]ci/i.test(item.description || '')) item.demo = true;
       });
+      if (saved.demoOccurrenceExamplesAdded) localStorage.setItem(storageKey, JSON.stringify(saved));
       return saved;
     }
   } catch (error) { console.warn('Dados locais de demonstração inválidos; serão recriados.', error); }
@@ -135,7 +152,9 @@ data.settings.roomBillingMode ||= 'proporcional';
 const demoClientNames = new Map([
   ['crm-demo-client-01', 'Maria'],
   ['crm-demo-client-02', 'João'],
-  ['crm-demo-client-03', 'Ana']
+  ['crm-demo-client-03', 'Ana'],
+  ['crm-demo-client-04', 'Júlia'],
+  ['crm-demo-client-05', 'Pedro']
 ]);
 data.clients.forEach((client) => {
   if (client.demo && demoClientNames.has(client.id)) client.name = demoClientNames.get(client.id);
@@ -307,7 +326,7 @@ function renderChat() {
   const welcome = `<div class="chat-welcome"><div class="chat-empty">Olá, Tami! Posso ajudar com o sistema. Toque em uma pergunta para começar:</div><div class="chat-suggestions">${suggestedQuestions.map((question) => `<button type="button" data-action="chat-prompt" data-prompt="${escapeHTML(question)}"><span>✦</span>${escapeHTML(question)}</button>`).join('')}</div></div>`;
   const suggestions = chatSuggestionsDismissed ? '' : `<div class="chat-suggestion-panel">${welcome}</div>`;
   const emptyHistory = chatSuggestionsDismissed ? '<div class="chat-empty">Escreva uma pergunta para continuar a conversa.</div>' : '';
-  return `<section class="panel module-panel"><div class="panel-heading"><div><p class="eyebrow">CONVERSA LOCAL</p><h2>Secretária virtual</h2></div><span class="ai-tag">LOCAL</span></div><div class="notice-box">Respostas gratuitas por regras locais. Não há IA generativa, WhatsApp ou serviço externo conectado. A conversa fica disponível nesta sessão e é apagada ao atualizar a página.</div>${suggestions}<div class="chat-log" id="chat-log">${messages || emptyHistory}</div><form class="inline-form chat-form" id="chat-form"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" name="message" maxlength="500" placeholder="Pergunte sobre agenda, marketing ou financeiro…" required><button class="primary-button">Enviar <span>→</span></button></form><p class="form-hint">Use apenas dados fictícios. Não informe dados de pacientes ou clientes.</p></section>`;
+  return `<section class="panel module-panel"><div class="panel-heading"><div><p class="eyebrow">CONVERSA LOCAL</p><h2>Secretária virtual</h2></div><span class="ai-tag">LOCAL</span></div><div class="notice-box">Respostas gratuitas por regras locais. Não há IA generativa, WhatsApp ou serviço externo conectado. A conversa fica disponível nesta sessão e é apagada ao atualizar a página.</div>${suggestions}<div class="chat-log" id="chat-log">${messages || emptyHistory}</div><form class="inline-form chat-form" id="chat-form"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" name="message" maxlength="500" placeholder="Pergunte sobre agenda, marketing ou financeiro…" required><button class="primary-button">Enviar <span>→</span></button></form><div class="secretary-voice-plan"><button class="secondary-button" type="button" disabled aria-describedby="voice-future-note">🎙 Falar com a secretária · futuro</button><small id="voice-future-note">Opção de voz planejada e desligada. Antes de ativar qualquer API, vamos conferir o custo e configurar limites.</small></div><p class="form-hint">Use apenas dados fictícios. Não informe dados de pacientes ou clientes.</p></section>`;
 }
 const artFormats = [
   { key: 'post', label: 'Post único', size: '1080 × 1350', icon: '▣' },
@@ -580,18 +599,23 @@ function renderCRMOverview() {
 function renderCRMRankings() {
   const rankings = window.CrmLocal.rankings({ clients: data.clients, visits: data.clientVisits, transactions: data.transactions, period: crmRankPeriod, today: localDate() });
   const periodOptions = [['all', 'Todo o histórico'], ['30', 'Últimos 30 dias'], ['90', 'Últimos 90 dias'], ['365', 'Últimos 12 meses']].map(([value, label]) => `<option value="${value}" ${crmRankPeriod === value ? 'selected' : ''}>${label}</option>`).join('');
-  const rankList = (title, criterion, items, value, score, icon) => {
+  const rankList = (title, criterion, items, value, score, icon, tone = '') => {
     const topScore = Math.max(0, ...items.slice(0, 5).map(score));
     const rows = items.slice(0, 5).map((item, index) => {
       const ratio = topScore > 0 ? Math.round((score(item) / topScore) * 100) : 0;
-      return `<li class="crm-rank-item ${index === 0 ? 'is-leader' : ''}"><div class="crm-rank-row"><span class="crm-rank-position">${String(index + 1).padStart(2, '0')}</span><span class="crm-rank-name">${escapeHTML(item.client.name)}</span><strong>${escapeHTML(value(item))}</strong></div><div class="crm-rank-track" role="img" aria-label="${ratio}% do valor do primeiro lugar"><span style="width:${ratio}%"></span></div></li>`;
+      const priority = tone === 'occurrences' ? score(item) >= 3 ? 'priority-high' : score(item) >= 2 ? 'priority-medium' : 'priority-low' : '';
+      return `<li class="crm-rank-item ${index === 0 ? 'is-leader' : ''} ${priority}"><div class="crm-rank-row"><span class="crm-rank-position">${String(index + 1).padStart(2, '0')}</span><span class="crm-rank-client"><span class="crm-rank-name">${escapeHTML(item.client.name)}</span>${item.client.demo ? '<small class="crm-rank-demo">EXEMPLO FICTÍCIO</small>' : ''}</span><strong>${escapeHTML(value(item))}</strong></div><div class="crm-rank-track" role="img" aria-label="${ratio}% do valor do primeiro lugar"><span style="width:${ratio}%"></span></div></li>`;
     }).join('');
-    return `<article class="panel crm-rank-card"><div class="crm-rank-card-heading"><span class="crm-rank-icon" aria-hidden="true">${icon}</span><div><h4>${title}</h4><small>${criterion}</small></div></div>${items.length ? `<ol>${rows}</ol>` : '<div class="empty-state compact"><p>Sem dados suficientes neste período.</p></div>'}</article>`;
+    const action = tone === 'occurrences' ? '<button class="secondary-button crm-rank-open" data-action="crm-occurrences-tab">Ver ocorrências</button>' : '';
+    return `<article class="panel crm-rank-card ${tone ? `crm-rank-tone-${tone}` : ''} ${tone === 'occurrences' ? 'crm-occurrence-ranking' : ''}"><div class="crm-rank-card-heading"><span class="crm-rank-icon" aria-hidden="true">${icon}</span><div><h4>${title}</h4><small>${criterion}</small></div></div>${items.length ? `<ol>${rows}</ol>` : '<div class="empty-state compact"><p>Nenhuma ocorrência pendente para acompanhar.</p></div>'}${action}</article>`;
   };
   const tenure = [...rankings.tenure].sort((a, b) => a.client.firstVisit.localeCompare(b.client.firstVisit));
   const oldestLabel = (item) => `${displayDate(item.client.firstVisit)} · ${Math.max(0, Math.floor((new Date(`${localDate()}T12:00:00`) - new Date(`${item.client.firstVisit}T12:00:00`)) / 86400000))} dias`;
   const daysInBase = (item) => Math.max(0, Math.floor((new Date(`${localDate()}T12:00:00`) - new Date(`${item.client.firstVisit}T12:00:00`)) / 86400000));
-  return `<section class="crm-rankings"><div class="crm-section-heading"><div><p class="eyebrow">VISÃO DA BASE</p><h3>Rankings de relacionamento</h3><p>Compare os principais indicadores do período selecionado.</p></div><label>Período<select id="crm-rank-period">${periodOptions}</select></label></div><div class="crm-rank-grid">${rankList('Maior valor cobrado', 'Total cobrado no período', rankings.spending, (item) => money(item.charged), (item) => item.charged, 'R$')}${rankList('Maior valor recebido', 'Pagamentos registrados no período', rankings.received, (item) => money(item.received), (item) => item.received, '↗')}${rankList('Mais tempo na base', 'Clientes com atendimento no período', tenure, oldestLabel, daysInBase, '◷')}${rankList('Mais atendimentos', 'Históricos registrados no período', rankings.attendance, (item) => `${item.visits} atendimento(s)`, (item) => item.visits, '＋')}${rankList('Maior frequência de retorno', 'Média de atendimentos por mês · mínimo de dois registros', rankings.frequency, (item) => `${item.monthlyFrequency.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/mês`, (item) => item.monthlyFrequency, '↻')}</div><p class="crm-method-note">As barras comparam cada pessoa ao primeiro lugar do mesmo ranking. Cobrado vem dos atendimentos; recebido considera os pagamentos ativos do Financeiro.</p></section>`;
+  const openByClient = new Map();
+  data.occurrences.filter((record) => record.clientId && record.status !== 'Resolvida').forEach((record) => openByClient.set(record.clientId, [...(openByClient.get(record.clientId) || []), record]));
+  const occurrenceRanking = [...openByClient.entries()].map(([clientId, records]) => ({ client: data.clients.find((item) => item.id === clientId), count: records.length, latestDate: records.map((record) => record.date).sort().at(-1) })).filter((item) => item.client).sort((a, b) => b.count - a.count || b.latestDate.localeCompare(a.latestDate));
+  return `<section class="crm-rankings"><div class="crm-section-heading"><div><p class="eyebrow">VISÃO DA BASE</p><h3>Rankings de relacionamento</h3><p>Compare os principais indicadores do período selecionado.</p></div><label>Período<select id="crm-rank-period">${periodOptions}</select></label></div><div class="crm-rank-grid">${rankList('Maior valor cobrado', 'Total cobrado no período', rankings.spending, (item) => money(item.charged), (item) => item.charged, 'R$')}${rankList('Maior valor recebido', 'Pagamentos registrados no período', rankings.received, (item) => money(item.received), (item) => item.received, '↗')}${rankList('Mais tempo na base', 'Clientes com atendimento no período', tenure, oldestLabel, daysInBase, '◷')}${rankList('Mais atendimentos', 'Históricos registrados no período', rankings.attendance, (item) => `${item.visits} atendimento(s)`, (item) => item.visits, '＋')}${rankList('Maior frequência de retorno', 'Média de atendimentos por mês · mínimo de dois registros', rankings.frequency, (item) => `${item.monthlyFrequency.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/mês`, (item) => item.monthlyFrequency, '↻')}${rankList('Acompanhamento prioritário', 'Quantidade de ocorrências administrativas ainda pendentes', occurrenceRanking, (item) => `${item.count} ${item.count === 1 ? 'pendência' : 'pendências'}`, (item) => item.count, '!', 'occurrences')}</div><p class="crm-method-note">As barras comparam cada pessoa ao primeiro lugar do mesmo ranking. O acompanhamento prioritário conta apenas ocorrências em aberto e serve para organizar providências; não é uma avaliação do cliente.</p></section>`;
 }
 function renderCRMProfile(client) {
   const visits = data.clientVisits.filter((item) => item.clientId === client.id).sort((a, b) => b.date.localeCompare(a.date));
@@ -606,7 +630,7 @@ function renderCRMProfile(client) {
 }
 function renderCRMOccurrences() {
   const records = [...data.occurrences].sort((a, b) => b.date.localeCompare(a.date));
-  return `<section class="crm-page"><div class="crm-heading"><div><p class="eyebrow">REGISTRO INTERNO</p><h2>Ocorrências e pendências</h2><p>Descrições factuais e providências administrativas.</p></div><button class="primary-button" data-action="new-crm-occurrence">＋ Registrar ocorrência</button></div><div class="notice-box crm-privacy-note"><strong>Acesso e privacidade:</strong> este protótipo não possui login nem permissões por usuário, portanto não pode restringir tecnicamente esta área. Use somente registros fictícios ou autorizados. Evite detalhes clínicos, dados sensíveis, julgamentos pessoais e rótulos ofensivos.</div>${records.length ? `<div class="crm-occurrence-list">${records.map((record) => { const client = data.clients.find((item) => item.id === record.clientId); return `<article class="panel crm-occurrence"><div class="crm-occurrence-head"><div><span class="crm-category">${escapeHTML(record.category)}</span><h3>${client ? escapeHTML(client.name) : 'Registro sem cliente associado'}</h3></div><span class="status ${record.status === 'Resolvida' ? 'confirmed' : 'pending'}">${escapeHTML(record.status)}</span></div><div class="crm-occurrence-meta"><span>Data: ${displayDate(record.date)}</span><span>Responsável pelo registro: ${escapeHTML(record.responsible)}</span></div><p><strong>Descrição factual</strong><br>${escapeHTML(record.description)}</p><p><strong>Providências</strong><br>${escapeHTML(record.actions || 'Nenhuma providência registrada.')}</p><div class="record-actions"><button class="secondary-button" data-action="edit-crm-occurrence" data-id="${record.id}">Corrigir / editar</button><button class="secondary-button" data-action="toggle-occurrence-status" data-id="${record.id}" data-status="${record.status === 'Resolvida' ? 'Pendente' : 'Resolvida'}">${record.status === 'Resolvida' ? 'Reabrir' : 'Marcar resolvida'}</button><button class="secondary-button danger" data-action="delete-crm-occurrence" data-id="${record.id}">Excluir</button></div></article>`; }).join('')}</div>` : '<div class="empty-state"><strong>Nenhuma ocorrência registrada</strong><p>Registre apenas fatos administrativos relevantes e necessários.</p><button class="primary-button" data-action="new-crm-occurrence">＋ Registrar ocorrência</button></div>'}</section>`;
+  return `<section class="crm-page"><div class="crm-heading"><div><p class="eyebrow">REGISTRO INTERNO</p><h2>Ocorrências e pendências</h2><p>Descrições factuais e providências administrativas.</p></div><button class="primary-button" data-action="new-crm-occurrence">＋ Registrar ocorrência</button></div><div class="notice-box crm-privacy-note"><strong>Acesso e privacidade:</strong> este protótipo não possui login nem permissões por usuário, portanto não pode restringir tecnicamente esta área. Use somente registros fictícios ou autorizados. Evite detalhes clínicos, dados sensíveis, julgamentos pessoais e rótulos ofensivos. Os exemplos de teste estão marcados como fictícios.</div>${records.length ? `<div class="crm-occurrence-list">${records.map((record) => { const client = data.clients.find((item) => item.id === record.clientId); return `<article class="panel crm-occurrence"><div class="crm-occurrence-head"><div><span class="crm-category">${escapeHTML(record.category)}</span><h3>${client ? escapeHTML(client.name) : 'Registro sem cliente associado'}</h3>${record.demo || client?.demo ? '<small class="crm-occurrence-demo">EXEMPLO FICTÍCIO</small>' : ''}</div><span class="status ${record.status === 'Resolvida' ? 'confirmed' : 'pending'}">${escapeHTML(record.status)}</span></div><div class="crm-occurrence-meta"><span>Data: ${displayDate(record.date)}</span><span>Responsável pelo registro: ${escapeHTML(record.responsible)}</span></div><p><strong>Descrição factual</strong><br>${escapeHTML(record.description)}</p><p><strong>Providências</strong><br>${escapeHTML(record.actions || 'Nenhuma providência registrada.')}</p><div class="record-actions"><button class="secondary-button" data-action="edit-crm-occurrence" data-id="${record.id}">Corrigir / editar</button><button class="secondary-button" data-action="toggle-occurrence-status" data-id="${record.id}" data-status="${record.status === 'Resolvida' ? 'Pendente' : 'Resolvida'}">${record.status === 'Resolvida' ? 'Reabrir' : 'Marcar resolvida'}</button><button class="secondary-button danger" data-action="delete-crm-occurrence" data-id="${record.id}">Excluir</button></div></article>`; }).join('')}</div>` : '<div class="empty-state"><strong>Nenhuma ocorrência registrada</strong><p>Registre apenas fatos administrativos relevantes e necessários.</p><button class="primary-button" data-action="new-crm-occurrence">＋ Registrar ocorrência</button></div>'}</section>`;
 }
 
 function agendaWeekDates() {
