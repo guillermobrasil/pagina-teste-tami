@@ -599,15 +599,26 @@ function renderCRMOverview() {
 function renderCRMRankings() {
   const rankings = window.CrmLocal.rankings({ clients: data.clients, visits: data.clientVisits, transactions: data.transactions, period: crmRankPeriod, today: localDate() });
   const periodOptions = [['all', 'Todo o histórico'], ['30', 'Últimos 30 dias'], ['90', 'Últimos 90 dias'], ['365', 'Últimos 12 meses']].map(([value, label]) => `<option value="${value}" ${crmRankPeriod === value ? 'selected' : ''}>${label}</option>`).join('');
+  const rankPalette = {
+    spending: { accent: '#b8cadb', wash: '#293039', track: '#586b7d' },
+    received: { accent: '#b8cfb9', wash: '#2b332c', track: '#607762' },
+    tenure: { accent: '#d7c39d', wash: '#353127', track: '#857247' },
+    attendance: { accent: '#cabbdf', wash: '#312d37', track: '#75628f' },
+    frequency: { accent: '#acd0cb', wash: '#283433', track: '#4f7b75' },
+    occurrences: { accent: '#e1a69d', wash: '#372c2b', track: '#9b5e58' }
+  };
+  const titleTones = { 'Maior valor cobrado': 'spending', 'Maior valor recebido': 'received', 'Mais tempo na base': 'tenure', 'Mais atendimentos': 'attendance', 'Maior frequência de retorno': 'frequency' };
   const rankList = (title, criterion, items, value, score, icon, tone = '') => {
+    const rankTone = tone || titleTones[title] || 'occurrences';
+    const palette = rankPalette[rankTone];
     const topScore = Math.max(0, ...items.slice(0, 5).map(score));
     const rows = items.slice(0, 5).map((item, index) => {
       const ratio = topScore > 0 ? Math.round((score(item) / topScore) * 100) : 0;
-      const priority = tone === 'occurrences' ? score(item) >= 3 ? 'priority-high' : score(item) >= 2 ? 'priority-medium' : 'priority-low' : '';
+      const priority = rankTone === 'occurrences' ? score(item) >= 3 ? 'priority-high' : score(item) >= 2 ? 'priority-medium' : 'priority-low' : '';
       return `<li class="crm-rank-item ${index === 0 ? 'is-leader' : ''} ${priority}"><div class="crm-rank-row"><span class="crm-rank-position">${String(index + 1).padStart(2, '0')}</span><span class="crm-rank-client"><span class="crm-rank-name">${escapeHTML(item.client.name)}</span>${item.client.demo ? '<small class="crm-rank-demo">EXEMPLO FICTÍCIO</small>' : ''}</span><strong>${escapeHTML(value(item))}</strong></div><div class="crm-rank-track" role="img" aria-label="${ratio}% do valor do primeiro lugar"><span style="width:${ratio}%"></span></div></li>`;
     }).join('');
-    const action = tone === 'occurrences' ? '<button class="secondary-button crm-rank-open" data-action="crm-occurrences-tab">Ver ocorrências</button>' : '';
-    return `<article class="panel crm-rank-card ${tone ? `crm-rank-tone-${tone}` : ''} ${tone === 'occurrences' ? 'crm-occurrence-ranking' : ''}"><div class="crm-rank-card-heading"><span class="crm-rank-icon" aria-hidden="true">${icon}</span><div><h4>${title}</h4><small>${criterion}</small></div></div>${items.length ? `<ol>${rows}</ol>` : '<div class="empty-state compact"><p>Nenhuma ocorrência pendente para acompanhar.</p></div>'}${action}</article>`;
+    const action = rankTone === 'occurrences' ? '<button class="secondary-button crm-rank-open" data-action="crm-occurrences-tab">Ver ocorrências</button>' : '';
+    return `<article class="panel crm-rank-card crm-rank-tone-${rankTone} ${rankTone === 'occurrences' ? 'crm-occurrence-ranking' : ''}" style="--rank-accent:${palette.accent};--rank-wash:${palette.wash};--rank-track:${palette.track}"><div class="crm-rank-card-heading"><span class="crm-rank-icon" aria-hidden="true">${icon}</span><div><h4>${title}</h4><small>${criterion}</small></div></div>${items.length ? `<ol>${rows}</ol>` : '<div class="empty-state compact"><p>Nenhuma ocorrência pendente para acompanhar.</p></div>'}${action}</article>`;
   };
   const tenure = [...rankings.tenure].sort((a, b) => a.client.firstVisit.localeCompare(b.client.firstVisit));
   const oldestLabel = (item) => `${displayDate(item.client.firstVisit)} · ${Math.max(0, Math.floor((new Date(`${localDate()}T12:00:00`) - new Date(`${item.client.firstVisit}T12:00:00`)) / 86400000))} dias`;

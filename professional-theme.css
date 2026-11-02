@@ -279,3 +279,25 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .app-shell .crm-page .crm-occurrence-ranking .crm-rank-card-heading h4 { color:#e1a69d !important; }
 .app-shell .crm-page .crm-occurrence-ranking .crm-rank-item.priority-high strong { color:#f0b0a8 !important; }
 .app-shell .crm-page .crm-occurrence-ranking .crm-rank-item.priority-medium strong { color:#e5c48e !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card[class*="crm-rank-tone-"] { border-top:3px solid var(--rank-accent) !important; background:linear-gradient(145deg,var(--rank-wash),#222220 48%) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card[class*="crm-rank-tone-"] .crm-rank-card-heading { border-bottom-color:color-mix(in srgb,var(--rank-accent) 34%,#393834) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card[class*="crm-rank-tone-"] .crm-rank-icon { color:var(--rank-accent) !important; background:var(--rank-wash) !important; border-color:var(--rank-accent) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card[class*="crm-rank-tone-"] .crm-rank-position { color:var(--rank-accent) !important; background:var(--rank-wash) !important; border-color:var(--rank-accent) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-spending .crm-rank-card-heading h4,
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-spending .crm-rank-item strong { color:#b8cadb !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-received .crm-rank-card-heading h4,
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-received .crm-rank-item strong { color:#b8cfb9 !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-tenure .crm-rank-card-heading h4,
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-tenure .crm-rank-item strong { color:#d7c39d !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-attendance .crm-rank-card-heading h4,
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-attendance .crm-rank-item strong { color:#cabbdf !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-frequency .crm-rank-card-heading h4,
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-frequency .crm-rank-item strong { color:#acd0cb !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card.crm-rank-tone-occurrences .crm-rank-card-heading h4 { color:#e1a69d !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-rank-card[class*="crm-rank-tone-"] .crm-rank-track span { background:var(--rank-accent) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-high strong { color:#f0b0a8 !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-medium strong { color:#e5c48e !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-high .crm-rank-track span { background:linear-gradient(90deg,#a95e58,#df9388) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-track span { background:linear-gradient(90deg,#9d8151,#cfad70) !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-high .crm-rank-position { color:#f0b0a8 !important; background:#482f2e !important; border-color:#df9388 !important; }
+.app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-position { color:#e5c48e !important; background:#393328 !important; border-color:#cfad70 !important; }
