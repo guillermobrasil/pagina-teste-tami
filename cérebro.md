@@ -130,10 +130,11 @@ Decisões visuais:
 - Resultado por atendimento: `recebido − custo da sala − materiais`. O resumo também considera outras despesas registradas.
 - Custos ausentes não equivalem a zero: o resultado fica incompleto até a informação ser preenchida. Zero só deve significar custo realmente inexistente.
 - Guardar custo/tarifa/regra aplicados ao atendimento em campos de snapshot; mudar Configurações não deve reprecificar automaticamente o passado.
-- Permitir editar custos manualmente no Financeiro, somente naquele atendimento. Também existe edição do atendimento e dos recebimentos.
+- No Resultado por atendimento, um único botão Editar abre os dados do atendimento, custos manuais de sala/materiais e o último recebimento ativo (descrição, valor, data, hora, bruto, taxas, forma e parcelas). O total recebido é somente leitura e recalculado ao salvar. Custos em branco continuam desconhecidos; ajustes afetam somente este atendimento. Despesas e lançamentos conserva os botões Editar e Cancelar.
 - O fluxo simplificado registra o efetivamente recebido; não inventar um valor contratado ou saldo devedor quando esse valor não foi informado. `chargedTotal` é um campo herdado usado na implementação: conferir sua semântica antes de expandir cobranças/parcelas.
 - Recebimentos e despesas exigem valor positivo e data válida. Taxas não podem superar o valor bruto informado.
-- Data e hora começam preenchidas em novos lançamentos; a hora deve aparecer abaixo da data nas tabelas.
+- Resultado por atendimento permanece em tabela em todas as larguras, com cabeçalhos visíveis, valores alinhados à direita, data/hora e números sem quebra e botões empilhados na coluna de ações. Largura mínima de 980px; em painéis menores, rolagem horizontal restrita à tabela.
+- Data e hora começam preenchidas em novos lançamentos. Nas tabelas do Financeiro, mostrar somente a data e uma hora abaixo, sem frases auxiliares e sem quebrar os números. No resultado por atendimento, usar a hora do último recebimento ativo ou, se ausente, a hora do atendimento; manter a data do atendimento.
 - O sistema usa números JavaScript e arredondamentos em partes do cálculo. Não possui motor contábil, conciliação bancária nem garantia formal de cálculo fiscal.
 - Regime da Tami ainda não foi confirmado. Não presumir MEI ou Simples Nacional. A seleção atual é informativa; não calcula alíquota nem imposto devido. Tributos efetivamente pagos podem ser registrados como despesas.
 
@@ -224,7 +225,7 @@ O servidor estático é para desenvolvimento local; não é uma infraestrutura p
 
 ## 9. Verificação e pendências conhecidas
 
-Última execução automatizada registrada antes da criação deste documento: **25 testes passaram, 0 falharam**.
+Última execução automatizada em 02/11/2026, após os ajustes de data/hora e largura do Financeiro: **26 testes passaram, 0 falharam**. `node --check app.js` também passou. A mudança de layout ainda precisa de conferência visual no navegador.
 
 Cobertura existente inclui motores de CRM/Marketing/secretária, navegação de todas as áreas, identidade visual, exportação em ambiente simulado, estratégias e aprovações, cadastro/atendimento/recebimentos, edição sem duplicidade, persistência, recuperação e rejeição de sobreposição na agenda.
 
@@ -239,7 +240,7 @@ Limites e próximos trabalhos:
 - Avaliar valores monetários em centavos inteiros ou biblioteca decimal antes de depender do sistema para apuração oficial.
 - Corrigir e validar os fluxos necessários antes de receber dados reais ou ativar integrações pagas.
 
-A criação desta memória foi uma tarefa documental e não repetiu a suíte de testes. O resultado de 25 testes aprovados corresponde à verificação das alterações funcionais descritas acima.
+A criação inicial desta memória foi documental. Na entrega do ajuste compacto do Financeiro, a suíte foi executada novamente com 25 testes aprovados; os testes usam interface simulada e não comprovam o encaixe visual em telas reais.
 
 ## 10. GitHub, publicação e backups
 
@@ -270,3 +271,13 @@ Se a alteração for apenas documental, informar isso; não inventar execução 
 - **02/11/2026 — mudanças locais posteriores ao backup:** avisos de demonstração e limites de produção; exportação/restauração e recuperação local; verificação de gravação; indicadores do início ligados aos registros; validação de datas, valores e conflitos de agenda; atualização/ampliação da suíte para 25 testes aprovados. Revisão visual completa continua pendente.
 - **02/11/2026 — esta entrega:** criação de `cérebro.md` e `AGENTS.md` para preservar o contexto do projeto e exigir atualização da memória em futuras entregas de desenvolvimento. Nenhum envio ao GitHub realizado nesta tarefa.
 - **02/11/2026 — envio solicitado pelo usuário:** preparação de um commit na `main` reunindo as correções funcionais, os testes e os documentos de segurança e memória que estavam locais. O resultado do envio deve ser confirmado no Git remoto; esta entrada registra a autorização e o conteúdo da entrega.
+
+- **02/11/2026 — financeiro compacto:** removidas as frases junto aos horários e a duplicação de horários na coluna Data; despesas também mostram apenas data e hora. Validação automatizada e limites registrados na seção 9. Sem publicação nesta entrega.
+
+- **02/11/2026 — largura dos resultados:** tabela de atendimentos adaptada à largura disponível, com blocos em painéis estreitos, quebra de textos e ações reorganizadas para dispensar rolagem horizontal. Verificação: `node --check app.js` e 25 testes aprovados. Conferência visual em navegador permanece pendente.
+
+- **02/11/2026 — retorno à tabela solicitado pelo usuário:** removida a conversão dos resultados em blocos; ajustadas colunas, alinhamento monetário e botões. Revisão do CSS e `git diff --check` sem erros; conferência visual em navegador permanece pendente. Sem novos testes automatizados nesta mudança de CSS.
+
+- **02/11/2026 — edição financeira unificada:** três botões de Resultado por atendimento reunidos em Editar, com custos e último recebimento na mesma janela. Teste verifica redução de valor sem duplicidade, rejeição de custo negativo e persistência das correções. `npm test`: 26 aprovados; `node --check app.js` e `git diff --check` aprovados. Sem verificação visual nesta entrega e sem envio ao GitHub.
+
+- **02/11/2026 — atualização do GitHub solicitada:** entrega na `main` dos ajustes da tabela financeira, data/hora compactas e edição unificada, junto com teste e memória. Verificações: 26 testes aprovados, sintaxe JavaScript e diff sem erros; revisão visual segue pendente. Confirmar o envio pelo hash remoto.

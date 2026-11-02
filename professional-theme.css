@@ -113,7 +113,7 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .finance-page .finance-summary article:nth-child(5) span,
 .finance-page .finance-summary article:nth-child(6) span { color: #c4beb4 !important; }
 .finance-page .table-wrap thead th { color: #c6c1b8 !important; }
-.finance-date { color: #aaa69e !important; }
+.finance-date { color: #aaa69e !important; white-space: nowrap; }
 .finance-page .finance-date small { display:block; margin-top:3px; color:#c9bda5 !important; font-size:13px !important; line-height:1.4; }
 .finance-date-time { display:grid; gap:10px; align-content:start; }
 .finance-date-time label { display:grid; gap:6px; min-width:0; }
@@ -309,3 +309,36 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-track span { background:linear-gradient(90deg,#9d8151,#cfad70) !important; }
 .app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-high .crm-rank-position { color:#f0b0a8 !important; background:#482f2e !important; border-color:#df9388 !important; }
 .app-shell .crm-page .crm-rank-grid > .crm-occurrence-ranking .crm-rank-item.priority-medium .crm-rank-position { color:#e5c48e !important; background:#393328 !important; border-color:#cfad70 !important; }
+
+/* Attendance results remain a table at every screen size. */
+.finance-page { min-width: 0; }
+.finance-page .finance-visits-wrap {
+  width: 100%; max-width: 100%; margin-inline: 0; overflow-x: auto;
+}
+.finance-visits-table { width: 100%; min-width: 980px; table-layout: fixed; }
+.finance-visits-table th, .finance-visits-table td {
+  padding: 12px 8px; vertical-align: top; white-space: normal;
+  overflow-wrap: break-word; line-height: 1.45;
+}
+.finance-visits-table th:nth-child(1) { width: 10%; }
+.finance-visits-table th:nth-child(2) { width: 12%; }
+.finance-visits-table th:nth-child(3) { width: 12%; }
+.finance-visits-table th:nth-child(4) { width: 10%; }
+.finance-visits-table th:nth-child(5) { width: 7%; }
+.finance-visits-table th:nth-child(6) { width: 9%; }
+.finance-visits-table th:nth-child(7) { width: 10%; }
+.finance-visits-table th:nth-child(8) { width: 12%; }
+.finance-visits-table th:nth-child(9) { width: 18%; }
+.finance-visits-table :is(.finance-date, .finance-amount, .finance-duration) {
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.finance-visits-table :is(th, td):nth-child(4),
+.finance-visits-table :is(th, td):nth-child(6),
+.finance-visits-table :is(th, td):nth-child(7),
+.finance-visits-table :is(th, td):nth-child(8) { text-align: right; }
+.finance-visits-table .finance-procedure { white-space: normal; }
+.finance-visits-table .finance-row-actions .secondary-button {
+  display: block; width: 100%; min-width: 0; margin: 0 0 6px;
+  padding: 7px 8px; white-space: normal; line-height: 1.35;
+}
+.finance-visits-table .finance-row-actions .secondary-button:last-child { margin-bottom: 0; }

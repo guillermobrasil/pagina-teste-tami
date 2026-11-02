@@ -37,6 +37,7 @@ class FakeElement {
   insertAdjacentHTML(_position, html) { this.insertedHTML = `${this.insertedHTML || ''}${html}`; if (this.propagateTo) this.propagateTo.innerHTML += html; }
   matches(selector) { return this.selectorMatches?.includes(selector) || false; }
   focus() {}
+  addEventListener() {}
 }
 
 function createApp(store = new Map()) {
@@ -483,4 +484,42 @@ test('casos de pagamento, parcelas futuras, edição sem duplicidade e recarga l
   expenseState = JSON.parse(store.get('estetica-pro-ia-demo-v1'));
   assert.equal(expenseState.transactions.filter((row) => row.id === expenseRow.id).length, 1, 'editar despesa mantém o mesmo lançamento');
   assert.equal(expenseState.transactions.find((row) => row.id === expenseRow.id).value, 50.25);
+});
+
+
+test('financeiro edita atendimento, custos e recebimento juntos sem duplicar', async () => {
+  const crmWindow = {}; vm.runInNewContext(crmSource, {window: crmWindow});
+  const store = new Map(); store.crm = crmWindow.CrmLocal;
+  const app = createApp(store);
+  const submit = async (id, dataset, values) => {
+    const form = new FakeElement(dataset); form.id = id; form.selectorMatches = ['form']; form.values = values;
+    await app.emitAsync('submit', form);
+  };
+  await submit('crm-client-form', {}, {name: 'Teste unificado', contact: '', firstVisit: '2026-11-02', nextReturnDate: '', notes: ''});
+  let state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const client = state.clients.find(c => c.name === 'Teste unificado');
+  const values = {procedure: 'Botox', date: '2026-11-02', durationMinutes: '60', appointmentId: '', receivedValue: '500,00', paymentMethod: 'pix', installments: '1'};
+  await submit('crm-visit-form', {clientId: client.id}, values);
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const visit = state.clientVisits.find(v => v.clientId === client.id);
+  const receipt = state.transactions.find(r => r.sourceVisitId === visit.id);
+  app.navigate('financeiro');
+  assert.doesNotMatch(app.document.querySelector('#workspace-view').innerHTML, /data-action="edit-visit-costs"/);
+  app.button('edit-finance-visit', {id: visit.id});
+  assert.match(app.document.querySelector('#modal-host').innerHTML, /name="roomCost"/);
+  assert.match(app.document.querySelector('#modal-host').innerHTML, /name="receiptValue"/);
+  const edit = {...values, roomCost: '100,00', materialCost: '50,00', receiptId: receipt.id, receiptValue: '400,00', receiptDate: '2026-11-01', receiptTime: '14:20', receiptDescription: 'Recebimento corrigido', receiptGross: '400,00', receiptFees: '0,00', receiptMethod: 'dinheiro', receiptInstallments: '1'};
+  const dataset = {id: visit.id, clientId: client.id, returnPage: 'financeiro'};
+  await submit('crm-visit-form', dataset, {...edit, materialCost: '-1'});
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  assert.equal(state.transactions.find(r => r.id === receipt.id).value, 500);
+  await submit('crm-visit-form', dataset, edit);
+  state = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const updated = state.clientVisits.find(v => v.id === visit.id);
+  assert.equal(updated.roomCost, 100); assert.equal(updated.materialCostSnapshot, 50);
+  const receipts = state.transactions.filter(r => r.sourceVisitId === visit.id);
+  assert.equal(receipts.length, 1); assert.equal(receipts[0].id, receipt.id);
+  assert.equal(receipts[0].value, 400); assert.equal(receipts[0].time, '14:20');
+  assert.equal(receipts[0].description, 'Recebimento corrigido');
+  assert.equal(receipts[0].paymentMethod, 'dinheiro');
 });
