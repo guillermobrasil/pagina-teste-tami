@@ -114,6 +114,9 @@ label, .modal-form label, .identity-font-grid label, .editor-fields label,
 .finance-page .finance-summary article:nth-child(6) span { color: #c4beb4 !important; }
 .finance-page .table-wrap thead th { color: #c6c1b8 !important; }
 .finance-date { color: #aaa69e !important; }
+.finance-page .finance-date small { display:block; margin-top:3px; color:#c9bda5 !important; font-size:13px !important; line-height:1.4; }
+.finance-date-time { display:grid; gap:10px; align-content:start; }
+.finance-date-time label { display:grid; gap:6px; min-width:0; }
 .finance-client { color: #ddd8cf !important; font-weight: 700; }
 .finance-procedure, .finance-procedure.procedure-botox, .finance-procedure.procedure-preenchimento,
 .finance-procedure.procedure-luz-pulsada, .finance-procedure.procedure-outro {
