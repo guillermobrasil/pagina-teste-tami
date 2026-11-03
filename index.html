@@ -16,27 +16,28 @@
   <link rel="stylesheet" href="strategy.css?v=20261102-flow-2">
   <link rel="stylesheet" href="crm.css?v=20261102-flow-2">
   <link rel="stylesheet" href="agenda.css?v=20261102-flow-2">
-  <link rel="stylesheet" href="judicial.css?v=20261102-flow-2">
+  <link rel="stylesheet" href="judicial.css?v=20261102-cases">
   <link rel="stylesheet" href="dark-theme.css?v=20261102-flow-2">
   <link rel="stylesheet" href="readability.css?v=20261102-flow-2">
   <link rel="stylesheet" href="professional-theme.css?v=20261102-flow-2">
-  <link rel="stylesheet" href="tami-theme.css?v=20261102-brand">
+  <link rel="stylesheet" href="tami-theme.css?v=20261102-studio">
   <script src="marketing-engine.js?v=20261102-flow-2" defer></script>
   <script src="secretaria-engine.js?v=20261102-flow-2" defer></script>
   <script src="crm-engine.js?v=20261102-flow-2" defer></script>
-  <script src="judicial-engine.js?v=20261102-flow-2" defer></script>
-  <script src="agents.js?v=20261102-flow-2" defer></script>
-  <link rel="stylesheet" href="section-disclosures.css?v=20261102-panels">
+  <script src="judicial-engine.js?v=20261102-cases" defer></script>
+  <script src="agents.js?v=20261102-cases" defer></script>
+  <link rel="stylesheet" href="section-disclosures.css?v=20261102-access">
   <link rel="stylesheet" href="ziggy.css?v=20261102-ziggy">
   <script src="ziggy.js?v=20261102-ziggy" defer></script>
-  <script src="section-disclosures.js?v=20261102-ziggy" defer></script>
+  <script src="section-disclosures.js?v=20261102-access" defer></script>
   <script src="tami-collection.js?v=20261102-brand" defer></script>
   <script src="workflow-engine.js?v=20261102-flow-2" defer></script>
   <script src="assets/cloud-store.js?v=20261102-flow-2" defer></script>
-  <script src="app.js?v=20261102-ziggy" defer></script>
+  <script src="app.js?v=20261102-cases" defer></script>
   <script src="app-cloud.js?v=20261102-flow-2" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#page-title">Pular para o conteúdo</a>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="#inicio" data-go="inicio" aria-label="Estética Pro IA, início">
@@ -64,10 +65,10 @@
     </aside>
 
     <main class="main-content">
-      <header class="topbar"><button class="mobile-menu" aria-label="Abrir menu" data-action="menu">☰</button><div class="breadcrumb-controls"><button class="history-button" id="nav-back" data-action="nav-back" aria-label="Voltar" title="Voltar" disabled>←</button><button class="history-button" id="nav-forward" data-action="nav-forward" aria-label="Avançar" title="Avançar" disabled>→</button><div class="breadcrumb"><button data-go="inicio">Painel</button><span>/</span><strong id="breadcrumb-current">Visão geral</strong></div></div><div class="top-actions"><span class="demo-badge"><i></i> AMBIENTE DE DEMONSTRAÇÃO</span><button class="icon-button notification" aria-label="Notificações" data-action="notifications">♧<i></i></button><a class="icon-button settings-top" href="#configuracoes" data-page="configuracoes" aria-label="Configurações" title="Configurações">⚙</a><span class="top-avatar" title="Tami">T</span></div></header>
+      <header class="topbar"><button class="mobile-menu" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu" data-action="menu">☰</button><div class="breadcrumb-controls"><button class="history-button" id="nav-back" data-action="nav-back" aria-label="Voltar" title="Voltar" disabled>←</button><button class="history-button" id="nav-forward" data-action="nav-forward" aria-label="Avançar" title="Avançar" disabled>→</button><div class="breadcrumb"><button data-go="inicio">Painel</button><span>/</span><strong id="breadcrumb-current">Visão geral</strong></div></div><div class="top-actions"><span class="demo-badge"><i></i> AMBIENTE DE DEMONSTRAÇÃO</span><button class="icon-button notification" aria-label="Notificações" data-action="notifications">♧<i></i></button><a class="icon-button settings-top" href="#configuracoes" data-page="configuracoes" aria-label="Configurações" title="Configurações">⚙</a><span class="top-avatar" title="Tami">T</span></div></header>
       <div class="content-wrap">
         <div class="account-bar"><span id="account-status" role="status">Demonstração · dados neste navegador</span><button class="secondary-button" id="account-button" data-action="account">Entrar na conta</button></div>
-        <section class="welcome-row"><div><p class="eyebrow" id="today-label">QUARTA-FEIRA, 18 DE JUNHO DE 2025</p><h1 id="page-title">Bom dia, Tami <span class="wave">✳</span></h1><p class="subtitle" id="page-subtitle">Aqui está o resumo do seu espaço hoje.</p></div><button class="primary-button" id="page-primary-action" data-action="new-appointment"><span>＋</span> Novo agendamento</button></section>
+        <section class="welcome-row"><div><p class="eyebrow" id="today-label">QUARTA-FEIRA, 18 DE JUNHO DE 2025</p><h1 id="page-title" tabindex="-1">Bom dia, Tami <span class="wave">✳</span></h1><p class="subtitle" id="page-subtitle">Aqui está o resumo do seu espaço hoje.</p></div><button class="primary-button" id="page-primary-action" data-action="new-appointment"><span>＋</span> Novo agendamento</button></section>
 
         <section id="workspace-view" class="workspace-view" hidden></section>
         <div id="overview-view">

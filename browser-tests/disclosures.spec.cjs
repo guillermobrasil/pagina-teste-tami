@@ -8,6 +8,8 @@ for (const width of [390,1440]) test(`caixas independentes em todas as abas, exc
     await page.goto(`/#${route}`);
     const buttons=page.locator('#workspace-view .section-disclosure-toggle:visible');
     expect(await buttons.count(),route).toBeGreaterThan(0);
+    const visuals=await page.locator('#workspace-view .disclosure-panel').evaluateAll(panels=>panels.map(panel=>({kind:panel.dataset.disclosureIcon,icons:panel.querySelector(':scope > .disclosure-heading').querySelectorAll('.section-disclosure-icon svg').length})));
+    expect(visuals.every(panel=>panel.kind && panel.icons===1),route).toBe(true);
     await expect(page.locator('#workspace-view .section-disclosure-toggle[aria-expanded="true"]')).toHaveCount(0);
     const first=buttons.first();
     const ids=(await first.getAttribute('aria-controls')).split(' ');
@@ -22,6 +24,8 @@ for (const width of [390,1440]) test(`caixas independentes em todas as abas, exc
   const returns=page.getByRole('button',{name:'Retornos',exact:true});
   await expect(clients).toHaveAttribute('aria-expanded','false');
   await expect(returns).toHaveAttribute('aria-expanded','false');
+  await expect(page.locator('.crm-panel').filter({has:clients})).toHaveAttribute('data-disclosure-icon','users');
+  await expect(page.locator('.crm-panel').filter({has:returns})).toHaveAttribute('data-disclosure-icon','repeat');
   await page.screenshot({path:`.cache/visual/disclosures-${width}-crm-closed.png`,fullPage:true});
   // Clicar na faixa BASE LOCAL também expande, sem mexer na caixa vizinha.
   await page.locator('.crm-panel').filter({has:clients}).locator('.eyebrow').first().click();

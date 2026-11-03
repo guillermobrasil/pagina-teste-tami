@@ -66,9 +66,9 @@
     },
     juridico: {
       name: 'Assistente jurídico e regulatório', area: 'AGENTE JURÍDICO', symbol: '§',
-      purpose: 'Ajudar a organizar documentos, temas regulatórios e perguntas para levar a profissionais habilitados.',
-      current: 'O módulo monta roteiros locais e aponta fontes oficiais. Não oferece parecer nem acompanha prazos automaticamente.',
-      scopes: ['Organização de documentos', 'Fontes oficiais', 'Lista de próximos passos'],
+      purpose: 'Apoiar a organização da atuação em estética e de casos vinculados aos clientes, para revisão da Tami e do advogado.',
+      current: 'Vincula casos fictícios ao cliente e atendimento, registra acompanhamentos e monta roteiros locais. Não há análise individual por IA, parecer ou cálculo de prazo processual.',
+      scopes: ['Casos de estética', 'Cliente e atendimento vinculados', 'Documentos a conferir', 'Próximos passos para revisão'],
       integrations: ['Fontes oficiais', 'Revisão de profissional habilitado']
     }
   };

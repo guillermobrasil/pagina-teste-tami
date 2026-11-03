@@ -89,7 +89,7 @@ const makeInitialData = () => {
     ...crm.transactions
   ],
   clients: crm.clients, clientVisits: crm.visits, occurrences: crm.occurrences,
-  chat: [], strategyPlans: [], whatsappSettings: { monthlyMessageCap: '', monthlyAiCap: '', requireApproval: true }, whatsappDrafts: [], demoOccurrenceExamplesAdded: true
+  chat: [], legalCases: [], strategyPlans: [], whatsappSettings: { monthlyMessageCap: '', monthlyAiCap: '', requireApproval: true }, whatsappDrafts: [], demoOccurrenceExamplesAdded: true
   });
 };
 function loadData() {
@@ -196,6 +196,7 @@ let activeSlideIndex = 0;
 let identityWorking = JSON.parse(JSON.stringify(data.identity));
 let strategyFlow = null;
 let crmActiveClientId = null;
+let legalActiveCaseId = null;
 let crmRankPeriod = 'all';
 let crmSearchTerm = '';
 let crmStatusFilter = 'todos';
@@ -343,6 +344,7 @@ function setPage(page, updateHash = true) {
   document.querySelector('#page-title').innerHTML = `${pageCopy[name][0]} <span class="wave">✳</span>`;
   document.querySelector('#page-subtitle').textContent = pageCopy[name][1];
   document.querySelector('#sidebar').classList.remove('open');
+  document.querySelector('.mobile-menu')?.setAttribute('aria-expanded', 'false');
   const primary = document.querySelector('#page-primary-action');
   if (name === 'marketing') {
     primary.hidden = false; primary.dataset.action = 'new-strategist'; primary.removeAttribute('data-format');
@@ -404,10 +406,53 @@ function renderWhatsApp() {
   const cards = drafts.length ? drafts.map((draft) => `<article class="whatsapp-draft"><div class="whatsapp-draft-head"><span class="whatsapp-category">${escapeHTML(draft.category)}</span><span class="whatsapp-status">${escapeHTML(draft.status)}</span></div><p>${escapeHTML(draft.body)}</p><small>${new Date(draft.createdAt).toLocaleString('pt-BR')}</small>${draft.status === 'Aguardando aprovação da Tami' ? `<div class="whatsapp-actions"><button class="secondary-button" type="button" data-action="whatsapp-approve" data-id="${escapeHTML(draft.id)}">Marcar revisado</button><button class="secondary-button" type="button" data-action="whatsapp-adjust" data-id="${escapeHTML(draft.id)}">Pedir ajuste</button></div>` : ''}</article>`).join('') : '<div class="empty-state"><strong>Nenhum rascunho ainda</strong><p>Salve uma resposta de exemplo para ver como funciona a revisão.</p></div>';
   return `<div class="whatsapp-page"><section class="whatsapp-hero"><div><p class="eyebrow">CANAIS · ESTRUTURA FUTURA</p><h2>WhatsApp da Tami</h2><p>Prepare respostas com calma. Esta tela não se conecta ao WhatsApp nem envia mensagens.</p></div><div class="whatsapp-state"><span>NÃO CONECTADO</span><span>IA DESATIVADA</span><span>ENVIO BLOQUEADO</span></div></section><div class="notice-box whatsapp-notice"><strong>Aprovação da Tami sempre obrigatória.</strong> “Marcar revisado” só muda o status deste rascunho salvo no navegador; não envia nada. Não há integração, IA externa ou cobrança criada por esta tela.</div><div class="whatsapp-grid"><section class="panel"><div class="panel-heading"><div><p class="eyebrow">RASCUNHO LOCAL</p><h2>Preparar uma resposta</h2></div></div><form id="whatsapp-draft-form" class="whatsapp-form"><label for="whatsapp-category">Assunto</label><select id="whatsapp-category" name="category"><option>Agendamento</option><option>Informação administrativa</option><option>Retorno</option></select><label for="whatsapp-body">Mensagem sem dados de cliente</label><textarea id="whatsapp-body" name="body" rows="4" maxlength="1000" placeholder="Escreva um exemplo genérico para revisar…" required></textarea><button class="primary-button" type="submit">Salvar para revisão</button><p class="form-hint">Não inclua nomes, telefones, dados de saúde ou informações de pacientes.</p></form></section><section class="panel"><div class="panel-heading"><div><p class="eyebrow">CONTROLE DE CUSTOS</p><h2>Limites para planejar</h2></div></div><form id="whatsapp-guardrails-form" class="whatsapp-form"><label for="whatsapp-message-cap">Orçamento mensal para mensagens (R$)</label><input id="whatsapp-message-cap" name="monthlyMessageCap" inputmode="decimal" placeholder="Deixe vazio se ainda não decidiu" value="${escapeHTML(data.whatsappSettings.monthlyMessageCap)}"><label for="whatsapp-ai-cap">Orçamento mensal para IA (R$)</label><input id="whatsapp-ai-cap" name="monthlyAiCap" inputmode="decimal" placeholder="Deixe vazio se ainda não decidiu" value="${escapeHTML(data.whatsappSettings.monthlyAiCap)}"><button class="secondary-button" type="submit">Salvar planejamento</button><p class="form-hint">São anotações locais. Ainda não bloqueiam cobranças; isso só será possível quando houver integração e limite real configurados.</p></form></section></div><section class="panel"><div class="panel-heading"><div><p class="eyebrow">FILA DE REVISÃO</p><h2>Respostas preparadas</h2></div><span class="whatsapp-status">${drafts.length} ${drafts.length === 1 ? 'rascunho' : 'rascunhos'}</span></div><div class="whatsapp-drafts">${cards}</div></section><section class="panel whatsapp-safety"><div class="panel-heading"><div><p class="eyebrow">QUANDO FOR CONECTAR</p><h2>Regras simples para evitar surpresa</h2></div></div><ul><li>Peça e registre autorização explícita antes de falar com alguém pelo WhatsApp.</li><li>Mensagens iniciadas pela empresa podem exigir modelos aprovados pela Meta; as respostas dependem da janela de atendimento.</li><li>Meta e fornecedor de IA podem cobrar separadamente. O preço depende do tipo e destino da mensagem; não conte com respostas gratuitas como garantia.</li><li>Perguntas clínicas, queixas ou situações delicadas devem ser encaminhadas à Tami para resposta humana.</li></ul><p><a href="https://whatsappbusiness.com/products/platform-pricing/" target="_blank" rel="noopener noreferrer">Consultar preços oficiais da Meta ↗</a> · <a href="https://business.whatsapp.com/policy/preview?lang=pt_BR" target="_blank" rel="noopener noreferrer">Política oficial de mensagens ↗</a></p></section></div>`;
 }
+function renderLegalCases() {
+  const engine = window.EsteticaJudicialEngine;
+  if (!engine?.casePlan) return '';
+  const cases = Array.isArray(data.legalCases) ? data.legalCases : [];
+  const active = cases.find(item => item.id === legalActiveCaseId);
+  const clientName = item => data.clients.find(c => c.id === item.clientId)?.name || 'Vínculo indisponível';
+  let detail = '';
+  if (active) {
+    const plan = engine.casePlan(active);
+    const visit = data.clientVisits.find(v => v.id === active.visitId && v.clientId === active.clientId);
+    detail = `<section class="panel legal-case-detail" id="legal-case-detail"><div class="panel-heading"><div><p class="eyebrow">CASO DE ESTÉTICA · ${escapeHTML(active.status)}</p><h3>${escapeHTML(clientName(active))} · ${escapeHTML(engine.caseKinds[active.kind])}</h3></div></div><div class="legal-case-body"><p>${visit ? `${displayDate(visit.date)} · ${escapeHTML(visit.procedure)}` : 'Sem atendimento vinculado'}</p><p class="legal-case-summary">${escapeHTML(active.summary)}</p><p><strong>Data de acompanhamento:</strong> ${active.deadline ? `${displayDate(active.deadline)} · informada e conferida pelo usuário` : 'Não informada; confira com o advogado se houver prazo formal.'}</p><div class="record-actions"><button class="secondary-button" data-action="legal-client" data-id="${escapeHTML(active.clientId)}">Abrir ficha do cliente</button><button class="secondary-button" data-action="edit-legal-case" data-id="${escapeHTML(active.id)}">Editar caso</button><button class="secondary-button" data-action="legal-case-note" data-id="${escapeHTML(active.id)}">Registrar acompanhamento</button></div><section class="legal-case-plan"><p class="eyebrow">APOIO LOCAL · AGENTE NÃO CONECTADO</p><h4>${escapeHTML(plan.priority)}</h4><p>Roteiro por assunto e informações marcadas neste caso. Não há leitura de documentos, diagnóstico, parecer ou análise individual por IA.</p><ol>${plan.steps.map(step=>`<li>${escapeHTML(step)}</li>`).join('')}</ol><h4>Documentos a conferir</h4><p>Marcas informadas pelo usuário; o sistema não verifica conteúdo nem validade.</p><ul>${Object.entries(engine.caseDocuments).map(([key,label])=>`<li>${active.documents?.[key] ? 'Informado como localizado' : plan.missing.includes(key) ? 'A conferir' : 'Verificar se aplicável'}: ${escapeHTML(label)}</li>`).join('')}</ul><h4>Perguntas para revisão da Tami e do advogado</h4><ul>${plan.questions.map(q=>`<li>${escapeHTML(q)}</li>`).join('')}</ul><nav aria-label="Referências para revisar o caso">${plan.sources.map(key=>`<a href="${escapeHTML(engine.regional.sources[key].url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(engine.regional.sources[key].label)} ↗</a>`).join('')}</nav></section><h4>Histórico de acompanhamento</h4><ol class="legal-case-history">${(active.history || []).map(event=>`<li><strong>${escapeHTML(new Date(event.at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}))} · ${escapeHTML(event.status)}</strong><p>${escapeHTML(event.note)}</p></li>`).join('')}</ol><p class="form-hint">Histórico administrativo de demonstração; não substitui prontuário, prova original ou registro de auditoria.</p></div></section>`;
+  }
+  return `<section class="panel legal-cases" id="legal-cases"><div class="panel-heading"><div><p class="eyebrow">PACIENTE → ATENDIMENTO → ACOMPANHAMENTO</p><h2>Casos de estética e possíveis processos</h2></div><button class="primary-button" data-action="new-legal-case">＋ Novo caso</button></div><div class="legal-cases-content"><p>Vincule o cliente já cadastrado e organize a situação sem repetir os dados do atendimento. Use somente casos fictícios nesta demonstração; não anexe fotos, prontuários ou documentos sigilosos.</p><p class="form-hint">Os casos são salvos com os demais registros e entram nas cópias de segurança. O agente de análise individual ainda não está conectado.</p><div class="legal-case-list">${cases.length ? cases.map(item=>`<article class="legal-case-row"><div><strong>${escapeHTML(clientName(item))}</strong><p>${escapeHTML(engine.caseKinds[item.kind] || 'Caso de estética')} · ${escapeHTML(item.status)}</p><small>${displayDate(item.date)}${item.deadline ? ` · acompanhar em ${displayDate(item.deadline)}` : ''}</small></div><button class="secondary-button" data-action="open-legal-case" data-id="${escapeHTML(item.id)}">Ver caso e próximos passos</button></article>`).join('') : '<div class="empty-state"><strong>Nenhum caso registrado</strong><p>Comece vinculando um exemplo ao cliente e ao atendimento.</p></div>'}</div>${detail}</div></section>`;
+}
+function legalCaseForm(item = {}, clientId = '') {
+  const engine = window.EsteticaJudicialEngine;
+  const selectedClient = item.clientId || clientId;
+  const options = data.clients.map(c=>`<option value="${escapeHTML(c.id)}" ${c.id === selectedClient ? 'selected' : ''}>${escapeHTML(c.name)}</option>`).join('');
+  openModal(item.id ? 'Editar caso de estética' : 'Novo caso de estética', `<form id="legal-case-form" class="modal-form" data-id="${escapeHTML(item.id || '')}"><p>Somente exemplos fictícios. Não informe dados de saúde identificáveis, número de processo ou documentos privados.</p><label>Cliente cadastrado<select name="clientId" required><option value="">Selecione</option>${options}</select></label><label>Atendimento associado (opcional)<select name="visitId"><option value="">Sem atendimento vinculado</option></select></label><label>Assunto<select name="kind" required><option value="">Selecione</option>${Object.entries(engine.caseKinds).map(([key,label])=>`<option value="${key}" ${item.kind === key ? 'selected' : ''}>${escapeHTML(label)}</option>`).join('')}</select></label><label>Situação<select name="status">${engine.caseStatuses.map(status=>`<option ${item.status === status ? 'selected' : ''}>${escapeHTML(status)}</option>`).join('')}</select></label><label>Data do registro<input type="date" name="date" required value="${escapeHTML(item.date || localDate())}"></label><label>Resumo factual do exemplo<textarea name="summary" rows="4" required minlength="10" maxlength="1200" placeholder="Ex.: cliente fictício relatou insatisfação com o resultado e solicitou avaliação.">${escapeHTML(item.summary || '')}</textarea></label><label><input type="checkbox" name="healthConcern" ${item.healthConcern ? 'checked' : ''}> Há preocupação atual com a saúde que exige avaliação assistencial</label><label>Data para acompanhar (opcional; não calculada pelo sistema)<input type="date" name="deadline" value="${escapeHTML(item.deadline || '')}"></label><label><input type="checkbox" name="deadlineChecked" ${item.deadlineChecked ? 'checked' : ''}> Se preenchi a data, conferi no documento ou com o advogado; não é prazo validado pelo sistema</label><fieldset class="legal-documents"><legend>Documentos preservados fora desta demonstração</legend>${Object.entries(engine.caseDocuments).map(([key,label])=>`<label><input type="checkbox" name="doc-${key}" ${item.documents?.[key] ? 'checked' : ''}> ${escapeHTML(label)}</label>`).join('')}</fieldset><label><input type="checkbox" name="fictional" required> Confirmo que este cadastro é um exemplo fictício</label><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">Voltar</button><button class="primary-button">Salvar caso</button></div></form>`);
+  updateLegalVisitOptions(selectedClient, item.visitId);
+}
+function updateLegalVisitOptions(clientId, selectedId = '') {
+  const select = document.querySelector('#legal-case-form [name="visitId"]');
+  if (!select) return;
+  select.innerHTML = '<option value="">Sem atendimento vinculado</option>' + data.clientVisits.filter(v=>v.clientId === clientId).map(v=>`<option value="${escapeHTML(v.id)}" ${v.id === selectedId ? 'selected' : ''}>${displayDate(v.date)} · ${escapeHTML(v.procedure)}</option>`).join('');
+}
+function revealLegalCase() {
+  window.SectionDisclosures?.reveal(document.querySelector('#legal-cases'));
+  const detail = document.querySelector('#legal-case-detail');
+  if (detail) { window.SectionDisclosures?.reveal(detail); detail.scrollIntoView({block:'start',behavior:'smooth'}); detail.querySelector('.section-disclosure-toggle')?.focus({preventScroll:true}); }
+}
+function renderRegionalLegalBase() {
+  const base = window.EsteticaJudicialEngine?.regional;
+  if (!base) return '';
+  const links = keys => keys.map(key => {
+    const source = base.sources[key];
+    return `<a href="${escapeHTML(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.label)} ↗</a>`;
+  }).join('');
+  return `<section class="notice-box judicial-regional-summary"><strong>CRBM-6 · Paraná · Curitiba</strong><p>Base inicial de consulta, organizada por assunto. Curadoria manual em 02/11/2026; sem monitoramento automático. Não reúne toda a legislação nem certifica regularidade. Normas federais, regionais e municipais têm funções diferentes.</p></section>
+  <div class="judicial-caution"><strong>Atenção: Resolução 241/2014 em disputa judicial.</strong> Consulte o tópico de limites de atuação antes de usar referências antigas como autorização. A situação atual dos autos e os efeitos de recursos precisam de análise individual.</div>
+  <div class="judicial-topic-grid">${base.topics.map(topic => `<section class="panel judicial-topic" id="legal-${topic.id}"><div class="panel-heading"><div><p class="eyebrow">${escapeHTML(topic.scope)}</p><h2>${escapeHTML(topic.title)}</h2></div></div><div class="judicial-topic-content"><ul>${topic.items.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul><nav aria-label="Fontes de ${escapeHTML(topic.title)}">${links(topic.sources)}</nav></div></section>`).join('')}</div>
+  <section class="judicial-resources"><div class="judicial-section-heading"><div><p class="eyebrow">BIBLIOTECA OFICIAL · CONSULTA MANUAL</p><h2>Fontes para conferir e aprofundar</h2></div></div><div class="judicial-library">${links(Object.keys(base.sources))}</div></section>`;
+}
 function renderJudicialAgent(result = null) {
   const contextHtml = result?.context ? `<div class="judicial-user-summary"><strong>Resumo para sua consulta</strong><p>${escapeHTML(result.context)}</p></div>` : '';
-  const resultHtml = result ? `<section class="judicial-result panel" aria-live="polite"><div class="panel-heading"><div><p class="eyebrow">ROTEIRO INICIAL · ${escapeHTML(result.categoryLabel)}</p><h2>${escapeHTML(result.title)}</h2></div><span class="judicial-result-icon">✓</span></div>${contextHtml}<p class="judicial-summary">${escapeHTML(result.summary)}</p><div class="judicial-columns"><div><h3>Separe para análise</h3><ul>${result.documents.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div><div><h3>Próximos passos</h3><ul>${result.steps.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div></div><div class="judicial-caution"><strong>Atenção ao prazo e à estratégia.</strong> Se recebeu intimação, notificação formal ou há risco imediato, confira o prazo no documento original e procure advogado habilitado na área. Este roteiro não avalia o mérito nem define uma defesa.</div><button class="secondary-button" type="button" data-action="judicial-clear">Organizar outra situação</button></section>` : '';
-  return `<div class="judicial-page"><section class="judicial-hero"><div><p class="eyebrow">BIOMEDICINA ESTÉTICA · APOIO JURÍDICO</p><h2>Entenda o cenário. Organize os documentos. Prepare a conversa com seu advogado.</h2><p>Um roteiro inicial para questões profissionais, éticas, sanitárias e judiciais da atuação em estética avançada.</p></div><span class="judicial-mark">§</span></section><div class="notice-box judicial-notice"><strong>Protótipo demonstrativo:</strong> as respostas são roteiros locais e gerais, não são parecer jurídico nem análise de legislação por IA. Não informe nomes, dados de pacientes, números de processo ou documentos sigilosos.</div><section class="panel judicial-intake"><div class="panel-heading"><div><p class="eyebrow">ORGANIZADOR DE CASOS</p><h2>O que você precisa organizar?</h2></div><span class="ai-tag">LOCAL · SEM ENVIO</span></div><form id="judicial-intake-form" class="judicial-form"><label for="judicial-category">Tipo de situação</label><select id="judicial-category" name="category" required><option value="">Selecione uma opção</option><option value="ethical">Conselho profissional ou processo ético</option><option value="complaint">Reclamação, dano ou notificação extrajudicial</option><option value="records">Consentimento, prontuário ou privacidade</option><option value="advertising">Publicidade profissional e redes sociais</option><option value="sanitary">Fiscalização sanitária ou regularização do espaço</option><option value="contract">Contrato, parceria ou prestação de serviços</option><option value="other">Outra questão judicial ou regulatória</option></select><label for="judicial-context">Resumo sem dados identificáveis <small>Opcional · não inclua nomes, contatos, dados de saúde ou número de processo</small></label><textarea id="judicial-context" name="context" rows="4" maxlength="700" placeholder="Ex.: recebi uma solicitação formal do conselho e preciso organizar os documentos e os prazos."></textarea><div class="judicial-form-footer"><p>O resumo fica somente nesta tela: não é salvo nem enviado a um serviço externo.</p><button class="primary-button" type="submit"><span>✦</span> Montar roteiro</button></div></form></section>${resultHtml}<section class="judicial-resources"><div class="judicial-section-heading"><div><p class="eyebrow">CONSULTA DIRETA</p><h2>Fontes oficiais para conferir</h2></div><p>Confira atualizações e regras do seu CRBM antes de tomar decisões.</p></div><div class="judicial-source-grid"><a class="panel judicial-source" href="https://cfbm.gov.br/resolucoes-cfbm/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Resoluções do Conselho Federal de Biomedicina</strong><small>Ver legislação profissional ↗</small></a><a class="panel judicial-source" href="https://cfbm.gov.br/duvidas-frequentes/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Dúvidas frequentes sobre habilitação e atuação</strong><small>Consultar orientações ↗</small></a><a class="panel judicial-source" href="https://www.gov.br/anvisa/pt-br/centraisdeconteudo/publicacoes/servicosdesaude/notas-tecnicas/notas-tecnicas-vigentes/nota-tecnica-no-2-2024-sei-ggtes-dire3-anvisa-esclarecimentos-sobre-os-servicos-de-estetica-e-atendimento-as-normas-sanitarias-aplicaveis-a-esses-servicos" target="_blank" rel="noopener noreferrer"><span>ANVISA</span><strong>Nota Técnica 2/2024 sobre serviços de estética</strong><small>Ver orientação sanitária ↗</small></a><a class="panel judicial-source" href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener noreferrer"><span>LEGISLAÇÃO FEDERAL</span><strong>Lei Geral de Proteção de Dados (LGPD)</strong><small>Ler texto oficial ↗</small></a></div></section><p class="judicial-disclaimer">Informação geral para organização. Regras podem mudar e também dependem do CRBM, da Vigilância Sanitária local e dos fatos concretos. Procure orientação jurídica individual antes de responder a notificações ou adotar uma estratégia.</p></div>`;
+  const resultHtml = result ? `<section class="judicial-result panel" aria-live="polite"><div class="panel-heading"><div><p class="eyebrow">ROTEIRO INICIAL · ${escapeHTML(result.categoryLabel)}</p><h2>${escapeHTML(result.title)}</h2></div><span class="judicial-result-icon">✓</span></div>${contextHtml}<p class="judicial-summary">${escapeHTML(result.summary)}</p><div class="judicial-columns"><div><h3>Separe para análise</h3><ul>${result.documents.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div><div><h3>Próximos passos</h3><ul>${result.steps.map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></div></div><div class="judicial-related"><strong>Consulte os assuntos relacionados:</strong> ${result.topics.map(topic => `<a href="#legal-${topic.id}" data-legal-topic="legal-${topic.id}">${escapeHTML(topic.title)}</a>`).join('')}</div><div class="judicial-caution"><strong>Atenção ao prazo e à estratégia.</strong> Se recebeu intimação, notificação formal ou há risco imediato, confira o prazo no documento original e procure advogado habilitado na área. Este roteiro não avalia o mérito nem define uma defesa.</div><button class="secondary-button" type="button" data-action="judicial-clear">Organizar outra situação</button></section>` : '';
+  return `<div class="judicial-page"><section class="judicial-hero"><div><p class="eyebrow">ATUAÇÃO EM ESTÉTICA · CRBM-6 / PARANÁ</p><h2>Cuide da sua atuação em estética. Acompanhe cada caso.</h2><p>Um roteiro inicial para questões profissionais, éticas, sanitárias e judiciais da atuação em estética avançada.</p></div><span class="judicial-mark">§</span></section><div class="notice-box judicial-notice"><strong>Protótipo demonstrativo:</strong> as respostas são roteiros locais e gerais, não são parecer jurídico nem análise de legislação por IA. Não informe nomes, dados de pacientes, números de processo ou documentos sigilosos.</div>${renderLegalCases()}<section class="panel judicial-intake"><div class="panel-heading"><div><p class="eyebrow">ORGANIZADOR DE CASOS</p><h2>O que você precisa organizar?</h2></div><span class="ai-tag">LOCAL · SEM ENVIO</span></div><form id="judicial-intake-form" class="judicial-form"><label for="judicial-category">Tipo de situação</label><select id="judicial-category" name="category" required><option value="">Selecione uma opção</option><option value="ethical">Conselho profissional ou processo ético</option><option value="complaint">Reclamação, dano ou notificação extrajudicial</option><option value="records">Consentimento, prontuário ou privacidade</option><option value="advertising">Publicidade profissional e redes sociais</option><option value="sanitary">Fiscalização sanitária ou regularização do espaço</option><option value="contract">Contrato, parceria ou prestação de serviços</option><option value="other">Outra questão judicial ou regulatória</option></select><label for="judicial-context">Resumo sem dados identificáveis <small>Opcional · não inclua nomes, contatos, dados de saúde ou número de processo</small></label><textarea id="judicial-context" name="context" rows="4" maxlength="700" placeholder="Ex.: recebi uma solicitação formal do conselho e preciso organizar os documentos e os prazos."></textarea><div class="judicial-form-footer"><p>O resumo fica somente nesta tela: não é salvo nem enviado a um serviço externo.</p><button class="primary-button" type="submit"><span>✦</span> Montar roteiro</button></div></form></section>${resultHtml}${renderRegionalLegalBase()}<p class="judicial-disclaimer">Informação geral para organização. Regras podem mudar e também dependem do CRBM, da Vigilância Sanitária local e dos fatos concretos. Procure orientação jurídica individual antes de responder a notificações ou adotar uma estratégia.</p></div>`;
 }
 function renderChat() {
   const messages = data.chat.map((item) => `<div class="chat-message ${item.from === 'you' ? 'from-you' : 'from-assistant'}"><small>${item.from === 'you' ? 'Você' : 'Ziggy · assistente local'} · ${escapeHTML(item.time)}</small><p>${escapeHTML(item.text)}</p></div>`).join('');
@@ -504,7 +549,7 @@ function renderMarketing() {
     if (draft) return renderDesignEditor(normalizeDraft(draft));
     activeDraftId = null;
   }
-  return `<section class="studio-home">${renderTamiCollection()}<div class="studio-intro"><div><p class="eyebrow">ESTÚDIO VISUAL · MODELOS EDITÁVEIS</p><h2>Crie do seu jeito.</h2><p>Monte artes originais para sua comunicação. Os modelos são estruturas de conteúdo, não recomendações clínicas.</p></div><span class="studio-mark"><img src="assets/monograma-tc.png" alt="Monograma TC"></span></div><div class="notice-box">Demonstração local. Nada será publicado. Use imagens próprias ou licenciadas; não use fotos de pacientes sem autorização.</div><h3 class="studio-section-title">Escolha um formato</h3><div class="template-gallery">${artFormats.map((format) => `<button class="template-card" data-action="new-design" data-format="${format.key}" data-kind="educativo"><span class="template-art ${format.key}"><i>${format.icon}</i><b>ESTÉTICA<br>COM CUIDADO</b><small>${format.label.toUpperCase()}</small></span><strong>${format.label}</strong><small>${format.size} px</small></button>`).join('')}</div><div class="studio-columns"><section class="studio-idea panel"><p class="eyebrow">SUGESTÃO DE ESTRUTURA</p><h3>Comece por um tema</h3><p>Gera uma estrutura local com título, pontos e convite — sem IA conectada.</p><form id="theme-form" class="theme-form"><label class="sr-only" for="theme-input">Tema do conteúdo</label><input id="theme-input" name="theme" maxlength="100" required placeholder="Ex.: cuidados antes de uma avaliação"><select name="format" aria-label="Formato"><option value="carousel">Carrossel</option><option value="post">Post único</option><option value="reel">Capa de Reels</option><option value="story">Stories</option></select><select name="kind" aria-label="Tipo de conteúdo">${contentKinds.map((kind) => `<option value="${kind.key}">${kind.label}</option>`).join('')}</select><button class="secondary-button">Montar estrutura</button></form></section><section class="studio-kinds panel"><p class="eyebrow">PAUTAS PARA SUA ROTINA</p><h3>Modelos de conteúdo</h3><div class="kind-chips">${contentKinds.map((kind) => `<button class="kind-chip" data-action="new-design" data-format="post" data-kind="${kind.key}">${kind.label}</button>`).join('')}</div></section></div><div class="studio-drafts-heading"><div><p class="eyebrow">SEUS TRABALHOS</p><h3>Rascunhos salvos <span>${data.drafts.length}</span></h3></div><span class="record-date">${window.CloudStore?.active ? 'Salvos na sua conta' : 'Salvos neste navegador'}</span></div>${data.drafts.length ? `<div class="draft-gallery">${data.drafts.map((raw) => { const draft = normalizeDraft(raw); const format = artFormats.find((item) => item.key === draft.format) || artFormats[0]; return `<article class="saved-design"><button class="saved-design-preview" data-action="open-design" data-id="${draft.id}" aria-label="Continuar editando ${escapeHTML(draft.title)}"><span class="mini-art" style="--mini-bg:${safeColor(draft.slides[0].bg, '#f3eee4')};--mini-fg:${safeColor(draft.slides[0].textColor, '#172b43')}"><b>${escapeHTML(draft.slides[0].title)}</b><small>${escapeHTML(draft.slides[0].subtitle)}</small></span></button><span class="type-label">${format.label} · ${escapeHTML(draft.type)}</span><h4>${escapeHTML(draft.title)}</h4><div class="record-actions"><button class="secondary-button" data-action="open-design" data-id="${draft.id}">Continuar editando</button><button class="secondary-button danger" data-action="delete-draft" data-id="${draft.id}">Excluir</button></div></article>`; }).join('')}</div>` : '<div class="empty-state"><strong>Seus rascunhos aparecerão aqui</strong><p>Escolha um formato acima para começar.</p></div>'}</section>`;
+  return `<section class="studio-home">${renderTamiCollection()}<section class="panel studio-create"><div class="panel-heading studio-create-heading"><div><p class="eyebrow">ESTÚDIO VISUAL</p><h2>Criar uma nova arte</h2></div><img class="studio-create-logo" src="assets/monograma-tc.png" alt="" width="48" height="32"></div><div class="studio-create-body"><p class="studio-create-lead">Escolha o formato e personalize com a identidade da sua marca.</p><div class="template-gallery">${artFormats.map((format) => `<button class="template-card" data-action="new-design" data-format="${format.key}" data-kind="educativo"><span class="template-art ${format.key}"><i>${format.icon}</i><b>ESTÉTICA<br>COM CUIDADO</b><small>${format.label.toUpperCase()}</small></span><strong>${format.label}</strong><small>${format.size} px</small></button>`).join('')}</div><p class="studio-create-note">Rascunhos para revisão, sem publicação automática. Use imagens próprias ou licenciadas; fotos de pacientes exigem autorização.</p></div></section><div class="studio-columns"><section class="studio-idea panel"><p class="eyebrow">SUGESTÃO DE ESTRUTURA</p><h3>Comece por um tema</h3><p>Gera uma estrutura local com título, pontos e convite — sem IA conectada.</p><form id="theme-form" class="theme-form"><label class="sr-only" for="theme-input">Tema do conteúdo</label><input id="theme-input" name="theme" maxlength="100" required placeholder="Ex.: cuidados antes de uma avaliação"><select name="format" aria-label="Formato"><option value="carousel">Carrossel</option><option value="post">Post único</option><option value="reel">Capa de Reels</option><option value="story">Stories</option></select><select name="kind" aria-label="Tipo de conteúdo">${contentKinds.map((kind) => `<option value="${kind.key}">${kind.label}</option>`).join('')}</select><button class="secondary-button">Montar estrutura</button></form></section><section class="studio-kinds panel"><p class="eyebrow">PAUTAS PARA SUA ROTINA</p><h3>Modelos de conteúdo</h3><div class="kind-chips">${contentKinds.map((kind) => `<button class="kind-chip" data-action="new-design" data-format="post" data-kind="${kind.key}">${kind.label}</button>`).join('')}</div></section></div><div class="studio-drafts-heading"><div><p class="eyebrow">SEUS TRABALHOS</p><h3>Rascunhos salvos <span>${data.drafts.length}</span></h3></div><span class="record-date">${window.CloudStore?.active ? 'Salvos na sua conta' : 'Salvos neste navegador'}</span></div>${data.drafts.length ? `<div class="draft-gallery">${data.drafts.map((raw) => { const draft = normalizeDraft(raw); const format = artFormats.find((item) => item.key === draft.format) || artFormats[0]; return `<article class="saved-design"><button class="saved-design-preview" data-action="open-design" data-id="${draft.id}" aria-label="Continuar editando ${escapeHTML(draft.title)}"><span class="mini-art" style="--mini-bg:${safeColor(draft.slides[0].bg, '#f3eee4')};--mini-fg:${safeColor(draft.slides[0].textColor, '#172b43')}"><b>${escapeHTML(draft.slides[0].title)}</b><small>${escapeHTML(draft.slides[0].subtitle)}</small></span></button><span class="type-label">${format.label} · ${escapeHTML(draft.type)}</span><h4>${escapeHTML(draft.title)}</h4><div class="record-actions"><button class="secondary-button" data-action="open-design" data-id="${draft.id}">Continuar editando</button><button class="secondary-button danger" data-action="delete-draft" data-id="${draft.id}">Excluir</button></div></article>`; }).join('')}</div>` : '<div class="empty-state"><strong>Seus rascunhos aparecerão aqui</strong><p>Escolha um formato acima para começar.</p></div>'}</section>`;
 }
 function renderStrategistEntry() {
   const savedPlans = (data.strategyPlans || []).map((plan) => `<article class="strategy-saved-card"><span class="type-label">${escapeHTML(plan.strategy?.name || 'Estratégia')}</span><h4>${escapeHTML(plan.context?.topic || plan.title)}</h4><p>${escapeHTML(plan.sourceLabel || 'Rascunho estratégico local')} · ${escapeHTML(plan.status || 'Salvo')}</p><div class="record-actions"><button class="secondary-button" data-action="resume-strategy" data-id="${plan.id}">${plan.editorDraftId ? 'Continuar no editor' : 'Continuar estratégia'}</button><button class="secondary-button danger" data-action="delete-strategy-plan" data-id="${plan.id}">Excluir</button></div></article>`).join('');
@@ -756,7 +801,7 @@ function renderCRMProfile(client) {
   const average = payments.length ? total / payments.length : 0;
   const forecast = window.CrmLocal.forecast(client, data.clientVisits);
   const last = visits[0] || null;
-  return `<section class="crm-page crm-profile"><div class="crm-profile-top"><button class="secondary-button" data-action="crm-back-to-list">← Lista e indicadores</button><div class="crm-heading"><div><p class="eyebrow">FICHA ADMINISTRATIVA</p><h2>${escapeHTML(client.name)} ${client.demo ? '<span class="crm-demo-label">Demonstração</span>' : ''}</h2><p>Dados mínimos para acompanhamento de relacionamento.</p></div><div class="crm-profile-actions"><button class="secondary-button" data-action="prepare-return-message" data-id="${client.id}">Preparar contato</button><button class="secondary-button" data-action="edit-crm-client" data-id="${client.id}">Editar ficha</button><button class="secondary-button danger" data-action="delete-crm-client" data-id="${client.id}">Excluir cadastro</button></div></div></div><div class="notice-box crm-privacy-note">Use somente informações administrativas. A demonstração local não tem controle de acesso. Não inclua dados sensíveis ou clínicos nas observações.</div><div class="crm-profile-metrics"><article><span>Primeiro atendimento</span><strong>${displayDate(client.firstVisit)}</strong></article><article><span>Atendimentos registrados</span><strong>${visits.length}</strong></article><article><span>Total cobrado</span><strong>${money(charged)}</strong></article><article><span>Total efetivamente recebido</span><strong>${money(total)}</strong></article><article><span>Saldo pendente</span><strong>${money(pending)}</strong></article><article><span>Ticket médio recebido</span><strong>${money(average)}</strong></article><article><span>Último procedimento</span><strong>${last ? `${displayDate(last.date)} · ${escapeHTML(last.procedure)}` : 'Sem histórico'}</strong></article><article><span>Próximo retorno</span><strong>${forecast.date ? `${displayDate(forecast.date)} · ${forecast.source === 'estimated' ? 'estimado' : 'manual'}` : 'Sem previsão'}</strong><small>${forecast.source === 'estimated' ? `Média de ${forecast.averageDays} dias entre atendimentos. Corrija no cadastro quando necessário.` : forecast.source === 'manual' ? 'Data informada manualmente; edite para corrigir.' : 'Ainda não há atendimentos suficientes para estimar.'}</small></article></div><div class="crm-profile-grid"><section class="panel crm-panel"><div class="panel-heading"><div><p class="eyebrow">HISTÓRICO</p><h3>Atendimentos e pagamentos</h3></div><button class="primary-button" data-action="new-crm-visit" data-id="${client.id}">＋ Registrar atendimento</button></div>${visits.length ? `<div class="table-wrap"><table class="crm-table"><thead><tr><th>Data</th><th>Procedimento/serviço</th><th>Cobrado</th><th>Recebido / saldo</th><th>Agenda</th><th></th></tr></thead><tbody>${visits.map((visit) => { const receipts = data.transactions.filter((item) => item.sourceVisitId === visit.id && item.type === 'receita'); const received = receivedForVisit(visit); const linkedAppointment = data.appointments.find((item) => item.id === visit.appointmentId); return `<tr><td>${displayDate(visit.date)}${visit.demo ? '<small class="crm-demo-label">Fictício</small>' : ''}</td><td>${escapeHTML(visit.procedure)}${visit.adminNotes ? `<small>${escapeHTML(visit.adminNotes)}</small>` : ''}<small>${escapeHTML(visit.paymentStatus || 'pendente')} · ${escapeHTML(visit.paymentMethod || '—')}${visit.paymentMethod === 'cartao' ? ` · ${visit.installments || 1}x` : ''}</small></td><td>${money(visit.chargedTotal || 0)}</td><td>${money(received)} / ${money(Math.max(0, Number(visit.chargedTotal || 0) - received))}${receipts.map((receipt) => `<small>${displayDate(receipt.date)} · ${receipt.status === 'Cancelado' ? `CANCELADO: ${escapeHTML(receipt.cancellationReason || 'motivo não informado')} · valor ${money(receipt.value)}` : `recebido ${money(receipt.value)}`}${receipt.paymentMethod === 'cartao' ? ` · ${receipt.installments || 1}x` : ''} ${receipt.status === 'Cancelado' ? '' : `<button class="secondary-button" data-action="edit-transaction" data-id="${receipt.id}">Editar</button>`}</small>`).join('')}<button class="secondary-button" data-action="add-visit-receipt" data-id="${visit.id}">＋ Recebimento</button></td><td>${linkedAppointment ? 'Compromisso vinculado' : '—'}</td><td><button class="secondary-button" data-action="edit-crm-visit" data-id="${visit.id}">Editar</button><button class="secondary-button danger" data-action="delete-crm-visit" data-id="${visit.id}">Excluir</button></td></tr>`; }).join('')}</tbody></table></div>` : '<div class="empty-state compact"><strong>Sem atendimentos registrados</strong><p>O histórico começa quando você adiciona um atendimento.</p></div>'}</section><section class="panel crm-panel"><div class="panel-heading"><div><p class="eyebrow">OBSERVAÇÕES</p><h3>Notas administrativas</h3></div></div><p class="crm-notes">${client.notes ? escapeHTML(client.notes) : 'Nenhuma observação administrativa cadastrada.'}</p><p class="form-hint">Use apenas informação administrativa necessária; não registre detalhes clínicos.</p></section></div></section>`;
+  return `<section class="crm-page crm-profile"><div class="crm-profile-top"><button class="secondary-button" data-action="crm-back-to-list">← Lista e indicadores</button><div class="crm-heading"><div><p class="eyebrow">FICHA ADMINISTRATIVA</p><h2>${escapeHTML(client.name)} ${client.demo ? '<span class="crm-demo-label">Demonstração</span>' : ''}</h2><p>Dados mínimos para acompanhamento de relacionamento.</p></div><div class="crm-profile-actions"><button class="secondary-button" data-action="prepare-return-message" data-id="${client.id}">Preparar contato</button><button class="secondary-button" data-action="new-legal-case" data-id="${client.id}">Caso de estética</button><button class="secondary-button" data-action="edit-crm-client" data-id="${client.id}">Editar ficha</button><button class="secondary-button danger" data-action="delete-crm-client" data-id="${client.id}">Excluir cadastro</button></div></div></div><div class="notice-box crm-privacy-note">Use somente informações administrativas. A demonstração local não tem controle de acesso. Não inclua dados sensíveis ou clínicos nas observações.</div><div class="crm-profile-metrics"><article><span>Primeiro atendimento</span><strong>${displayDate(client.firstVisit)}</strong></article><article><span>Atendimentos registrados</span><strong>${visits.length}</strong></article><article><span>Total cobrado</span><strong>${money(charged)}</strong></article><article><span>Total efetivamente recebido</span><strong>${money(total)}</strong></article><article><span>Saldo pendente</span><strong>${money(pending)}</strong></article><article><span>Ticket médio recebido</span><strong>${money(average)}</strong></article><article><span>Último procedimento</span><strong>${last ? `${displayDate(last.date)} · ${escapeHTML(last.procedure)}` : 'Sem histórico'}</strong></article><article><span>Próximo retorno</span><strong>${forecast.date ? `${displayDate(forecast.date)} · ${forecast.source === 'estimated' ? 'estimado' : 'manual'}` : 'Sem previsão'}</strong><small>${forecast.source === 'estimated' ? `Média de ${forecast.averageDays} dias entre atendimentos. Corrija no cadastro quando necessário.` : forecast.source === 'manual' ? 'Data informada manualmente; edite para corrigir.' : 'Ainda não há atendimentos suficientes para estimar.'}</small></article></div><div class="crm-profile-grid"><section class="panel crm-panel"><div class="panel-heading"><div><p class="eyebrow">HISTÓRICO</p><h3>Atendimentos e pagamentos</h3></div><button class="primary-button" data-action="new-crm-visit" data-id="${client.id}">＋ Registrar atendimento</button></div>${visits.length ? `<div class="table-wrap"><table class="crm-table"><thead><tr><th>Data</th><th>Procedimento/serviço</th><th>Cobrado</th><th>Recebido / saldo</th><th>Agenda</th><th></th></tr></thead><tbody>${visits.map((visit) => { const receipts = data.transactions.filter((item) => item.sourceVisitId === visit.id && item.type === 'receita'); const received = receivedForVisit(visit); const linkedAppointment = data.appointments.find((item) => item.id === visit.appointmentId); return `<tr><td>${displayDate(visit.date)}${visit.demo ? '<small class="crm-demo-label">Fictício</small>' : ''}</td><td>${escapeHTML(visit.procedure)}${visit.adminNotes ? `<small>${escapeHTML(visit.adminNotes)}</small>` : ''}<small>${escapeHTML(visit.paymentStatus || 'pendente')} · ${escapeHTML(visit.paymentMethod || '—')}${visit.paymentMethod === 'cartao' ? ` · ${visit.installments || 1}x` : ''}</small></td><td>${money(visit.chargedTotal || 0)}</td><td>${money(received)} / ${money(Math.max(0, Number(visit.chargedTotal || 0) - received))}${receipts.map((receipt) => `<small>${displayDate(receipt.date)} · ${receipt.status === 'Cancelado' ? `CANCELADO: ${escapeHTML(receipt.cancellationReason || 'motivo não informado')} · valor ${money(receipt.value)}` : `recebido ${money(receipt.value)}`}${receipt.paymentMethod === 'cartao' ? ` · ${receipt.installments || 1}x` : ''} ${receipt.status === 'Cancelado' ? '' : `<button class="secondary-button" data-action="edit-transaction" data-id="${receipt.id}">Editar</button>`}</small>`).join('')}<button class="secondary-button" data-action="add-visit-receipt" data-id="${visit.id}">＋ Recebimento</button></td><td>${linkedAppointment ? 'Compromisso vinculado' : '—'}</td><td><button class="secondary-button" data-action="edit-crm-visit" data-id="${visit.id}">Editar</button><button class="secondary-button danger" data-action="delete-crm-visit" data-id="${visit.id}">Excluir</button></td></tr>`; }).join('')}</tbody></table></div>` : '<div class="empty-state compact"><strong>Sem atendimentos registrados</strong><p>O histórico começa quando você adiciona um atendimento.</p></div>'}</section><section class="panel crm-panel"><div class="panel-heading"><div><p class="eyebrow">OBSERVAÇÕES</p><h3>Notas administrativas</h3></div></div><p class="crm-notes">${client.notes ? escapeHTML(client.notes) : 'Nenhuma observação administrativa cadastrada.'}</p><p class="form-hint">Use apenas informação administrativa necessária; não registre detalhes clínicos.</p></section></div></section>`;
 }
 function renderCRMOccurrences() {
   const records = [...data.occurrences].sort((a, b) => b.date.localeCompare(a.date));
@@ -890,11 +935,27 @@ async function restoreLocalBackup(file) {
   if (!save()) { data = priorData; return; }
   window.location.reload();
 }
+let modalReturnFocus = null;
+function closeModal() {
+  document.querySelector('#modal-host').innerHTML = '';
+  if (modalReturnFocus?.isConnected) modalReturnFocus.focus();
+  modalReturnFocus = null;
+}
 function openModal(title, content) {
+  if (!document.querySelector('#modal-host .modal-card')) modalReturnFocus = document.activeElement;
   const host = document.querySelector('#modal-host');
   host.innerHTML = `<div class="modal-backdrop"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="panel-heading"><h2 id="modal-title">${title}</h2><button type="button" class="modal-close" data-action="close-modal" aria-label="Fechar">×</button></div>${content}</section></div>`;
-  host.querySelector('.modal-backdrop').addEventListener('click', (event) => { if (event.target === event.currentTarget) host.innerHTML = ''; });
-  host.querySelector('input, textarea, select')?.focus();
+  host.querySelector('.modal-backdrop').addEventListener('click', (event) => { if (event.target === event.currentTarget) closeModal(); });
+  const dialog = host.querySelector('.modal-card');
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; }
+    if (event.key !== 'Tab') return;
+    const controls = [...dialog.querySelectorAll('a[href],button,input,textarea,select,[tabindex="0"]')].filter(el => !el.disabled && el.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  });
+  (host.querySelector('input:not([type="hidden"]), textarea, select') || host.querySelector('.modal-close'))?.focus();
 }
 function openHelpGuide() {
   openModal('Conheça o painel', `<div class="help-guide"><p>Um roteiro rápido para saber onde começar. Os registros desta demonstração ficam neste navegador.</p><ol><li><strong>Agenda</strong><span>Organize horários. A conexão com Google e coworking ainda não está ativa.</span></li><li><strong>Clientes e Relacionamento</strong><span>Cadastre fichas, atendimentos e retornos. Use dados fictícios enquanto o sistema não tiver login.</span></li><li><strong>Financeiro</strong><span>Registre o que recebeu e revise os custos por atendimento. Confira os valores antes de usar como controle oficial.</span></li><li><strong>Configurações</strong><span>Use a engrenagem no alto à direita para informar custos e procedimentos.</span></li><li><strong>Secretária virtual</strong><span>Faça perguntas pelos atalhos ou escreva. As respostas atuais são locais e demonstrativas.</span></li><li><strong>WhatsApp</strong><span>A estrutura está planejada, mas não conecta nem envia mensagens.</span></li></ol><div class="help-guide-actions"><button class="secondary-button" data-action="help-open-page" data-target="agenda">Abrir Agenda</button><button class="secondary-button" data-action="help-open-page" data-target="crm">Abrir Clientes</button><button class="secondary-button" data-action="help-open-page" data-target="configuracoes">Abrir Configurações</button></div></div>`);
@@ -1068,6 +1129,14 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const { action, id } = button.dataset;
+  if (action === 'new-legal-case') { legalCaseForm({}, id || ''); return; }
+  if (action === 'edit-legal-case') { const item = (data.legalCases || []).find(c=>c.id === id); if (item) legalCaseForm(item); return; }
+  if (action === 'open-legal-case') { legalActiveCaseId = id; renderPage('juridico'); revealLegalCase(); return; }
+  if (action === 'legal-client') { crmActiveClientId = id; crmCurrentTab = 'clientes'; setPage('crm'); return; }
+  if (action === 'legal-case-note') {
+    const item = (data.legalCases || []).find(c=>c.id === id); if (!item) return;
+    openModal('Registrar acompanhamento', `<form id="legal-case-note-form" class="modal-form" data-id="${escapeHTML(item.id)}"><p>Registre somente a próxima providência administrativa do exemplo. Não cole documentos ou dados de saúde.</p><label>Acompanhamento<textarea name="note" rows="4" required minlength="5" maxlength="1000"></textarea></label><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">Voltar</button><button class="primary-button">Salvar acompanhamento</button></div></form>`); return;
+  }
   if (action === 'export-local-backup') { downloadLocalBackup(); return; }
   if (action === 'export-damaged-recovery') { downloadDamagedRecovery(); return; }
   if (action === 'choose-backup-file') { document.querySelector('#backup-file-input')?.click(); return; }
@@ -1130,7 +1199,7 @@ document.addEventListener('click', (event) => {
     form.requestSubmit();
     return;
   }
-  if (action === 'menu') { document.querySelector('#sidebar').classList.toggle('open'); return; }
+  if (action === 'menu') { const open = document.querySelector('#sidebar').classList.toggle('open'); button.setAttribute('aria-expanded', String(open)); return; }
   if (action === 'judicial-clear') { renderPage('juridico'); return; }
   if (action === 'identity-preview') { updateIdentityPreviews(); showToast('Pré-visualização atualizada. Salve para usar nos novos modelos.'); return; }
   if (action === 'identity-save') {
@@ -1150,8 +1219,8 @@ document.addEventListener('click', (event) => {
   if (action === 'identity-remove-logo') { identityWorking.logo = ''; renderPage('identidade'); updateIdentityPreviews(); showToast('Logotipo removido da prévia. Salve para confirmar.'); return; }
   if (action === 'nav-back') { if (routeCursor > 0) history.back(); return; }
   if (action === 'nav-forward') { if (routeCursor < routeStack.length - 1) history.forward(); return; }
-  if (action === 'close-modal') { document.querySelector('#modal-host').innerHTML = ''; return; }
-  if (action === 'help-open-page') { const target = button.dataset.target; document.querySelector('#modal-host').innerHTML = ''; if (pageNames[target]) setPage(target); return; }
+  if (action === 'close-modal') { closeModal(); return; }
+  if (action === 'help-open-page') { const target = button.dataset.target; closeModal(); if (pageNames[target]) setPage(target); return; }
   if (action === 'help') { openHelpGuide(); return; }
   if (action === 'new-strategist') { strategyFlow = { step: 'input', input: null, recommendations: [], planId: null }; renderPage('marketing'); return; }
   if (action === 'exit-strategist') { strategyFlow = null; renderPage('marketing'); return; }
@@ -1213,6 +1282,7 @@ document.addEventListener('click', (event) => {
   if (action === 'open-crm-client') { crmActiveClientId = id; crmCurrentTab = 'clientes'; renderPage('crm'); return; }
   if (action === 'delete-crm-client') {
     const client = data.clients.find((item) => item.id === id); if (!client) return;
+    if ((data.legalCases || []).some(item => item.clientId === id)) return showToast('Este cliente tem caso de est\u00e9tica vinculado. Preserve o cadastro para manter o acompanhamento.', 'error');
     if (!window.confirm(`Excluir ${client.name}? o histórico de atendimentos será removido, os pagamentos permanecerão no Financeiro sem vínculo e compromissos/ocorrências serão desassociados.`)) return;
     const visits = data.clientVisits.filter((item) => item.clientId === id);
     visits.forEach((visit) => { releaseVisitAppointment(visit); releaseVisitPayment(visit); });
@@ -1226,6 +1296,7 @@ document.addEventListener('click', (event) => {
   if (action === 'new-crm-visit') { const client = data.clients.find((item) => item.id === id); if (client) crmVisitForm(client); return; }
   if (action === 'edit-crm-visit') { const visit = data.clientVisits.find((item) => item.id === id); const client = data.clients.find((item) => item.id === visit?.clientId); if (visit && client) crmVisitForm(client, visit); return; }
   if (action === 'delete-crm-visit') {
+    if ((data.legalCases || []).some(item => item.visitId === id)) return showToast('Este atendimento possui caso de est\u00e9tica vinculado. Preserve o registro.', 'error');
     const visit = data.clientVisits.find((item) => item.id === id); if (!visit) return;
     if (!window.confirm('Excluir este atendimento do histórico? Um lançamento de pagamento criado por ele também será removido; pagamentos financeiros vinculados manualmente serão preservados e desassociados.')) return;
     releaseVisitPayment(visit); releaseVisitAppointment(visit); data.clientVisits = data.clientVisits.filter((item) => item.id !== id);
@@ -1325,6 +1396,28 @@ document.addEventListener('submit', async (event) => {
   if (!form.matches('form')) return;
   event.preventDefault();
   const values = Object.fromEntries(new FormData(form));
+  if (form.id === 'legal-case-form') {
+    try {
+      const engine = window.EsteticaJudicialEngine;
+      if (!form.elements.fictional.checked) return;
+      const checked = name => form.querySelector(`[name="${name}"]`).checked;
+      const normalized = engine.validateCase({...values, healthConcern:checked('healthConcern'), deadlineChecked:checked('deadlineChecked'), documents:Object.fromEntries(Object.keys(engine.caseDocuments).map(key=>[key,checked(`doc-${key}`)]))},data.clients,data.clientVisits);
+      const cases = Array.isArray(data.legalCases) ? data.legalCases : [];
+      const prior = cases.find(c=>c.id === form.dataset.id);
+      const item = {...normalized, id:prior?.id || crypto.randomUUID(), history:[...(prior?.history || []),{at:new Date().toISOString(),status:normalized.status,note:prior ? 'Cadastro revisado. Confira as informações e documentos indicados.' : 'Caso fictício registrado para organização e revisão.'}]};
+      data.legalCases = prior ? cases.map(c=>c.id === prior.id ? item : c) : [item,...cases];
+      legalActiveCaseId = item.id;
+      const saved = save(); closeModal(); setPage('juridico'); revealLegalCase();
+      if (saved) showToast('Caso de estética salvo com vínculo ao cliente.');
+    } catch(error) { showToast(error.message,'error'); }
+    return;
+  }
+  if (form.id === 'legal-case-note-form') {
+    const item = (data.legalCases || []).find(c=>c.id === form.dataset.id); if (!item) return;
+    const note = String(values.note || '').trim(); if (note.length < 5) return;
+    item.history ||= []; item.history.push({at:new Date().toISOString(),status:item.status,note:note.slice(0,1000)});
+    const saved = save(); closeModal(); renderPage('juridico'); revealLegalCase(); if (saved) showToast('Acompanhamento registrado.'); return;
+  }
   if (form.id === 'canva-link-form') {
     const draft = data.drafts.find(item => item.id === form.dataset.id);
     const raw = String(values.canvaUrl || '').trim(); const url = safeCanvaUrl(raw);
@@ -1362,7 +1455,7 @@ document.addEventListener('submit', async (event) => {
     visit.materialCostSource = materialCost === null ? '' : 'manual';
     visit.costsUpdatedAt = new Date().toISOString();
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = '';
+    closeModal();
     renderPage('financeiro');
     showToast('Custos deste atendimento atualizados. Os valores padrão não foram alterados.');
     return;
@@ -1403,7 +1496,7 @@ document.addEventListener('submit', async (event) => {
       linkedVisit.chargedTotal = received;
       linkedVisit.paymentStatus = received > 0 ? 'pago' : 'pendente';
     }
-    save(); document.querySelector('#modal-host').innerHTML = ''; renderPage(activePage); showToast('Motivo e uso de material/sala salvos; lançamento cancelado no histórico.'); return;
+    save(); closeModal(); renderPage(activePage); showToast('Motivo e uso de material/sala salvos; lançamento cancelado no histórico.'); return;
   }
   if (form.id === 'settings-form') {
     const hourlyRoomCost = values.hourlyRoomCost.trim() ? parseMoney(values.hourlyRoomCost) : '';
@@ -1426,6 +1519,8 @@ document.addEventListener('submit', async (event) => {
     const guide = window.EsteticaJudicialEngine?.createGuide(values.category, values.context || '');
     if (!guide) return showToast('Não foi possível montar o roteiro. Atualize a página e tente novamente.', 'error');
     document.querySelector('#workspace-view').innerHTML = renderJudicialAgent(guide);
+    window.SectionDisclosures?.enhance(document.querySelector('#workspace-view'), 'juridico');
+    window.SectionDisclosures?.reveal(document.querySelector('.judicial-result'));
     document.querySelector('.judicial-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
@@ -1462,7 +1557,7 @@ document.addEventListener('submit', async (event) => {
     else data.clients.unshift(client);
     crmActiveClientId = client.id; crmCurrentTab = 'clientes';
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = ''; renderPage('crm'); showToast(old ? 'Ficha atualizada e salva neste navegador.' : 'Cadastro salvo neste navegador.'); return;
+    closeModal(); renderPage('crm'); showToast(old ? 'Ficha atualizada e salva neste navegador.' : 'Cadastro salvo neste navegador.'); return;
   }
   if (form.id === 'crm-visit-form') {
     const client = data.clients.find(c => c.id === form.dataset.clientId);
@@ -1521,7 +1616,7 @@ document.addEventListener('submit', async (event) => {
     else data.clientVisits.unshift(visit);
     crmActiveClientId = client.id;
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = '';
+    closeModal();
     if (form.dataset.returnPage === 'financeiro') { financeRange = window.WorkflowLocal.period('month', visit.date); setPage('financeiro'); renderPage('financeiro'); }
     else renderPage('crm');
     showToast('Atendimento salvo. Pagamento, custos e resultado foram atualizados.'); return;
@@ -1534,7 +1629,7 @@ document.addEventListener('submit', async (event) => {
     if (old) data.occurrences = data.occurrences.map((item) => item.id === record.id ? record : item);
     else data.occurrences.unshift(record);
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = ''; crmCurrentTab = 'ocorrencias'; renderPage('crm'); showToast(old ? 'Ocorrência corrigida e salva.' : 'Ocorrência registrada neste navegador.'); return;
+    closeModal(); crmCurrentTab = 'ocorrencias'; renderPage('crm'); showToast(old ? 'Ocorrência corrigida e salva.' : 'Ocorrência registrada neste navegador.'); return;
   }
   if (form.id === 'theme-form') {
     const theme = values.theme.trim();
@@ -1597,7 +1692,7 @@ document.addEventListener('submit', async (event) => {
     if (form.dataset.id) data.appointments = data.appointments.map((record) => record.id === item.id ? item : record);
     else data.appointments.push(item);
     if (!save()) return;
-    agendaSelectedDate = values.date; agendaWeekOffset = agendaOffsetForDate(values.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Compromisso salvo na agenda demonstrativa.'); return;
+    agendaSelectedDate = values.date; agendaWeekOffset = agendaOffsetForDate(values.date); closeModal(); renderPage('agenda'); showToast('Compromisso salvo na agenda demonstrativa.'); return;
   }
   if (form.id === 'appointment-cancellation-form') {
     const appointment = data.appointments.find((item) => item.id === form.dataset.id);
@@ -1617,14 +1712,14 @@ document.addEventListener('submit', async (event) => {
     if (roomExpense > 0) expenses.push({ type: 'despesa', description: `Sala utilizada em atendimento cancelado · ${appointment.title} · ${appointment.cancellationReason}`, value: roomExpense, category: 'sala-cancelamento' });
     expenses.forEach((expense) => data.transactions.unshift({ id: crypto.randomUUID(), ...expense, date: localDate(), time: localTime(), appointmentId: appointment.id, clientId: appointment.clientId || '', cancellationReason: appointment.cancellationReason, demo: appointment.demo || false }));
     if (!save()) return;
-    agendaSelectedDate = appointment.date; agendaWeekOffset = agendaOffsetForDate(appointment.date); document.querySelector('#modal-host').innerHTML = ''; renderPage('agenda'); showToast('Cancelamento e custos registrados no histórico.'); return;
+    agendaSelectedDate = appointment.date; agendaWeekOffset = agendaOffsetForDate(appointment.date); closeModal(); renderPage('agenda'); showToast('Cancelamento e custos registrados no histórico.'); return;
   }
   if (form.id === 'draft-form') {
     const item = { id: form.dataset.id || crypto.randomUUID(), type: values.type, title: values.title.trim(), body: values.body.trim(), updatedAt: new Date().toISOString() };
     if (form.dataset.id) data.drafts = data.drafts.map((record) => record.id === item.id ? item : record);
     else data.drafts.unshift(item);
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = ''; renderPage('marketing'); showToast('Rascunho salvo neste navegador.'); return;
+    closeModal(); renderPage('marketing'); showToast('Rascunho salvo neste navegador.'); return;
   }
   if (form.id === 'transaction-form') {
     const value = parseMoney(values.value);
@@ -1643,7 +1738,7 @@ document.addEventListener('submit', async (event) => {
     else data.transactions.unshift(record);
     if (visit) { visit.paymentIds = data.transactions.filter((item) => item.sourceVisitId === visit.id).map((item) => item.id); visit.transactionId = visit.paymentIds[0] || ''; visit.chargedTotal = visit.agreedTotal ?? receivedForVisit(visit); visit.paymentConfirmed = true; visit.paymentStatus = visit.chargedTotal > receivedForVisit(visit) ? 'parcialmente-pago' : 'pago'; visit.paymentMethod = record.paymentMethod || visit.paymentMethod; visit.installments = record.installments || visit.installments; }
     if (!save()) return;
-    document.querySelector('#modal-host').innerHTML = ''; renderPage(activePage === 'crm' ? 'crm' : 'financeiro'); showToast(editing ? 'Lançamento atualizado sem criar duplicidade.' : visit ? 'Recebimento registrado e vinculado ao atendimento.' : 'Lançamento salvo e saldo atualizado.');
+    closeModal(); renderPage(activePage === 'crm' ? 'crm' : 'financeiro'); showToast(editing ? 'Lançamento atualizado sem criar duplicidade.' : visit ? 'Recebimento registrado e vinculado ao atendimento.' : 'Lançamento salvo e saldo atualizado.');
   }
 });
 document.addEventListener('input', (event) => {
@@ -1768,3 +1863,29 @@ document.querySelector('#today-label').textContent = day.format(new Date()).toLo
 history.replaceState({ appPage: activePage }, '', `#${activePage}`);
 setPage(activePage, false);
 updateCounts();
+
+ document.addEventListener('click', event => {
+  const link = event.target.closest('[data-legal-topic]');
+  if (!link) return;
+  event.preventDefault();
+  const target = document.getElementById(link.dataset.legalTopic);
+  if (!target) return;
+  window.SectionDisclosures?.reveal(target);
+  target.scrollIntoView({behavior:'smooth', block:'start'});
+  target.querySelector('.section-disclosure-toggle')?.focus({preventScroll:true});
+});
+
+document.addEventListener('click', event => {
+  if (!event.target.closest('.skip-link')) return;
+  event.preventDefault(); document.querySelector('#page-title').focus();
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || !document.querySelector('#sidebar.open')) return;
+  document.querySelector('#sidebar').classList.remove('open');
+  const menu = document.querySelector('.mobile-menu');
+  menu.setAttribute('aria-expanded','false'); menu.focus();
+});
+
+document.addEventListener('change', event => {
+  if(event.target.matches('#legal-case-form [name="clientId"]')) updateLegalVisitOptions(event.target.value);
+});

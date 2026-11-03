@@ -1,0 +1,24 @@
+const {test,expect}=require('@playwright/test');
+for(const width of [390,1440]) test(`jurídico regional e roteiro com fontes em ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:900});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/#juridico');
+  await expect(page.locator('.judicial-regional-summary')).toContainText('CRBM-6 · Paraná · Curitiba');
+  await expect(page.locator('.judicial-topic')).toHaveCount(6);
+  await page.locator('#legal-practice .section-disclosure-toggle').click();
+  await expect(page.locator('#legal-practice a')).toHaveCount(3);
+  await expect(page.locator('#legal-practice')).toContainText('não consultou o andamento atual');
+  await page.locator('.judicial-intake .section-disclosure-toggle').click();
+  await page.locator('#judicial-category').selectOption('advertising');
+  await page.locator('#judicial-context').fill('<img src=x onerror=alert(1)>');
+  await page.getByRole('button',{name:'Montar roteiro'}).click();
+  await expect(page.locator('.judicial-result .section-disclosure-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('.judicial-user-summary')).toContainText('<img src=x onerror=alert(1)>');
+  await expect(page.locator('.judicial-user-summary img')).toHaveCount(0);
+  await page.locator('.judicial-related a').click();
+  await expect(page).toHaveURL(/#juridico$/);
+  await expect(page.locator('#legal-advertising .section-disclosure-toggle')).toHaveAttribute('aria-expanded','true');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+  await page.screenshot({path:`.cache/visual/legal-${width}.png`,fullPage:true});
+});

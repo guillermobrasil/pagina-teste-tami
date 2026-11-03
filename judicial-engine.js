@@ -1,4 +1,28 @@
 (() => {
+  // Curadoria manual: links não equivalem a autorização ou acompanhamento processual.
+  const regional = {
+    council: 'CRBM-6', jurisdiction: 'Paraná', city: 'Curitiba', reviewedAt: '2026-11-02',
+    sources: {
+      council: { label: 'CRBM-6 · jurisdição e canais oficiais', url: 'https://crbm6.gov.br/' },
+      inspection: { label: 'CRBM-6 · fiscalização profissional', url: 'https://crbm6.gov.br/departamento/' },
+      ethics: { label: 'CFBM · Código de Ética, Resolução 330/2020', url: 'https://cfbm.gov.br/legislacao/codigo-de-etica/' },
+      resolutions: { label: 'CFBM · catálogo de resoluções', url: 'https://cfbm.gov.br/resolucoes-cfbm/' },
+      court: { label: 'TRF1 · notícia da decisão sobre a Resolução 241/2014', url: 'https://trf1.jus.br/trf1/noticias/turma-anula-resolucao-que-autorizava-biomedicos-a-fazerem-procedimentos-esteticos-invasivos' },
+      councilNote: { label: 'CFBM · posicionamento e recurso informado em 24/02/2026', url: 'https://cfbm.gov.br/nota-de-esclarecimento-atuacao-do-biomedico-na-saude-estetica-e-decisao-do-trf1/' },
+      license: { label: 'Curitiba · licenciamento sanitário digital', url: 'https://saude.curitiba.pr.gov.br/conteudo/licenca-sanitaria-digital/1496' },
+      localRules: { label: 'Curitiba · legislação sanitária municipal', url: 'https://saude.curitiba.pr.gov.br/conteudo/legislacao-municipal/1633' },
+      hygiene: { label: 'Anvisa · segurança do estabelecimento', url: 'https://www.gov.br/anvisa/pt-br/comunicacao/campanhas/estetica/estabelecimento-seguro' },
+      privacy: { label: 'LGPD · texto oficial (Lei 13.709/2018)', url: 'https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm' }
+    },
+    topics: [
+      { id: 'registration', title: 'Inscrição, habilitação e responsabilidade técnica', scope: 'CRBM-6 · fiscalização', categories: ['ethical','contract'], sources: ['inspection','council'], items: ['Separe comprovantes de inscrição, habilitações registradas, responsabilidade técnica, situação de anuidade e documentação da pessoa jurídica.', 'Confirme com o CRBM-6 se os registros correspondem à atividade e ao estabelecimento efetivos.'] },
+      { id: 'practice', title: 'Limites de atuação e decisões judiciais', scope: 'REVISÃO JURÍDICA NECESSÁRIA', categories: ['ethical','other'], sources: ['court','councilNote','resolutions'], items: ['O TRF1 divulgou em 17/03/2026 decisão que manteve a anulação da Resolução CFBM 241/2014. O CFBM informou recurso em nota de 24/02/2026.', 'Esta base não consultou o andamento atual dos autos nem certifica trânsito em julgado, alcance ou efeito dos recursos. Antes de oferecer procedimentos, peça análise atual ao advogado e orientação formal ao CRBM-6.', 'Inscrição, habilitação, licença sanitária e um curso isoladamente não comprovam permissão para todo procedimento. Não há lista automática de procedimentos liberados nesta tela.'] },
+      { id: 'advertising', title: 'Publicidade, redes sociais e imagens', scope: 'CFBM · Código de Ética, arts. 8–11', categories: ['advertising'], sources: ['ethics'], items: ['Confira a identificação profissional, registro no Conselho e habilitações registradas no material divulgado.', 'Revise alegações científicas e retire promessas de resultado ou mensagens enganosas. A responsabilidade também alcança a publicidade do estabelecimento.', 'Imagens de pacientes e resultados exigem conferência das condições do Código, consentimento específico e avisos aplicáveis. Uma autorização de imagem, sozinha, não aprova a publicação.'] },
+      { id: 'records', title: 'Consentimento, prontuário e sigilo', scope: 'ÉTICA E PROTEÇÃO DE DADOS', categories: ['records','complaint'], sources: ['ethics','privacy'], items: ['Preserve prontuários e consentimentos íntegros, com acesso restrito. Não use casos identificáveis nesta demonstração.', 'Revise finalidade, base legal, acesso, retenção e resposta a pedidos de titulares com assessoria especializada; não confunda consentimento clínico com autorização de publicidade. O texto da LGPD foi mantido como referência; a leitura automatizada foi bloqueada nesta consulta.'] },
+      { id: 'sanitary', title: 'Licenciamento e estrutura em Curitiba', scope: 'MUNICÍPIO · NÃO É REGRA DO CRBM', categories: ['sanitary','contract'], sources: ['license','localRules','hygiene'], items: ['Confira licença do endereço e atividade reais, enquadramento de risco e exigência de projeto com a Vigilância Sanitária municipal.', 'Consulte o processo de licenciamento da Resolução SMS 02/2018 e a análise prévia de atividades da Resolução SMS 05/2025 no portal municipal. Não presuma dispensa pelo nome comercial da atividade.', 'Revise higiene, conservação, armazenamento e processamento dos materiais reutilizáveis conforme o serviço. Licenciamento sanitário e habilitação profissional são verificações distintas.'] },
+      { id: 'response', title: 'Fiscalização, notificações e reclamações', scope: 'ORGANIZAÇÃO PARA REVISÃO HUMANA', categories: ['ethical','complaint','other'], sources: ['inspection','ethics'], items: ['Preserve a comunicação original, prova de recebimento, cronologia e documentos do atendimento sem alterações retroativas.', 'Confira o prazo no documento original e o canal oficial do órgão. O sistema não calcula defesa, não protocola resposta e não substitui advogado.'] }
+    ]
+  };
   const guides = {
     ethical: {
       categoryLabel: 'Conselho profissional', title: 'Prepare uma resposta documentada',
@@ -47,8 +71,36 @@
   function createGuide(category, context = '') {
     const guide = guides[category] || guides.other;
     const cleanContext = String(context).trim();
-    return { ...guide, context: cleanContext };
+    const topics = regional.topics.filter(topic => topic.categories.includes(category));
+    return { ...guide, context: cleanContext, topics: topics.length ? topics : regional.topics.filter(topic => topic.id === 'response') };
   }
 
-  window.EsteticaJudicialEngine = { createGuide };
+  const caseKinds = { dissatisfaction:'Insatisfação com resultado estético', complication:'Intercorrência relatada após procedimento', notice:'Notificação ou pedido de reparação', lawsuit:'Processo relacionado à estética', council:'Fiscalização da atuação estética', advertising:'Imagem ou publicidade do atendimento' };
+  const caseStatuses = ['Em triagem','Aguardando revisão da Tami','Aguardando advogado','Em acompanhamento','Encerrado'];
+  const caseDocuments = { record:'Prontuário e avaliação preservados', consent:'Consentimentos localizados', messages:'Comunicações originais preservadas', trace:'Registros de produtos / equipamentos localizados', notification:'Notificação ou documento recebido preservado' };
+  function validateCase(values, clients, visits) {
+    if (!clients.some(c => c.id === values.clientId)) throw new Error('Selecione um cliente cadastrado.');
+    if (values.visitId && !visits.some(v => v.id === values.visitId && v.clientId === values.clientId)) throw new Error('O atendimento precisa pertencer ao cliente selecionado.');
+    if (!Object.hasOwn(caseKinds,values.kind) || !caseStatuses.includes(values.status)) throw new Error('Confira o assunto e a situação do caso.');
+    const summary = String(values.summary || '').trim().slice(0,1200);
+    if (summary.length < 10) throw new Error('Descreva os fatos em pelo menos 10 caracteres.');
+    const date = String(values.date || '');
+    const validDate = value => { const parsed = new Date(value+'T12:00:00Z'); return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0,10) === value; };
+    if (!validDate(date)) throw new Error('Informe uma data válida para o registro.');
+    const deadline = String(values.deadline || '');
+    if (deadline && (!validDate(deadline) || !values.deadlineChecked)) throw new Error('Confira a data de acompanhamento no documento ou com o advogado e confirme essa conferência.');
+    return {clientId:values.clientId, visitId:values.visitId || '', kind:values.kind, status:values.status, date, summary, deadline, deadlineChecked:!!deadline, healthConcern:values.healthConcern === true, documents:Object.fromEntries(Object.keys(caseDocuments).map(key=>[key,values.documents?.[key] === true]))};
+  }
+  function casePlan(item) {
+    const formal = ['notice','lawsuit','council'].includes(item.kind);
+    const missing = Object.keys(caseDocuments).filter(key=>!item.documents?.[key] && (key !== 'notification' || formal));
+    const steps = ['Organize a sequência dos fatos e preserve registros originais; não altere retrospectivamente o prontuário.', 'Separe o relato da pessoa, o que está documentado e o que ainda precisa ser verificado.'];
+    if (item.healthConcern) steps.unshift('Priorize avaliação assistencial por profissional habilitado; se houver risco imediato, busque atendimento de urgência. Este roteiro não avalia sintomas nem orienta tratamento.');
+    if (formal) steps.push('Leve o documento integral ao advogado e confirme recebimento, prazo, órgão competente e providências antes de responder. O sistema não calcula prazo processual.');
+    else steps.push('Prepare uma conversa de acolhimento e avaliação com a Tami, registre o acompanhamento e peça revisão jurídica antes de resposta formal ou proposta de acordo.');
+    if (item.kind === 'advertising') steps.push('Separe a versão da publicação e as autorizações para revisão das regras de publicidade; não divulgue o caso identificável.');
+    if (item.kind === 'council') steps.push('Confira habilitação, responsabilidade técnica e limites do procedimento com o CRBM-6 e o advogado; esta tela não autoriza a atuação.');
+    return { priority:item.healthConcern ? 'Prioridade assistencial' : formal ? 'Revisão jurídica prioritária' : 'Organizar acompanhamento', steps, missing, questions:['Quais fatos e documentos ainda precisam ser confirmados?', 'Há comunicação formal ou prazo que o advogado deva conferir?', 'Quem ficará responsável pelo próximo contato e pela revisão?'], sources: item.kind === 'council' ? ['inspection','court','councilNote'] : item.kind === 'advertising' ? ['ethics'] : ['ethics','hygiene'] };
+  }
+  window.EsteticaJudicialEngine = { createGuide, regional, caseKinds, caseStatuses, caseDocuments, validateCase, casePlan };
 })();
