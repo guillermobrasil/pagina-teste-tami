@@ -1,4 +1,33 @@
 const {test,expect}=require('@playwright/test');
+test('olhar segue o ponteiro com limite e respeita pausa, movimento reduzido e saída',async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});await page.goto('/#secretaria');
+  const root=page.locator('.ziggy-companion');
+  const eyeX=()=>root.evaluate(el=>parseFloat(el.style.getPropertyValue('--ziggy-eye-x')) || 0);
+  await page.mouse.move(0,500);await expect.poll(eyeX).toBeLessThan(-.5);
+  await page.mouse.move(1430,500);await expect.poll(eyeX).toBeGreaterThan(.5);
+  expect(Math.abs(await eyeX())).toBeLessThanOrEqual(3.2);
+  await expect(page.locator('.ziggy-sprite')).toHaveCSS('background-position','0% 0%');
+  await page.getByRole('button',{name:'Pausar animações',exact:true}).click();
+  await page.mouse.move(0,500);expect(await eyeX()).toBe(0);
+  await expect(page.locator('.ziggy-motion')).toHaveCSS('animation-name','none');
+  await page.getByRole('button',{name:'Retomar animações',exact:true}).click();
+  await page.mouse.move(1430,500);await expect.poll(eyeX).toBeGreaterThan(.5);
+  await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointerout',{relatedTarget:null})));
+  await expect.poll(async()=>Math.abs(await eyeX())).toBeLessThan(.05);
+  await page.emulateMedia({reducedMotion:'reduce'});await page.mouse.move(0,500);
+  expect(await eyeX()).toBe(0);await expect(page.locator('.ziggy-blink')).toHaveCSS('animation-name','none');
+  await page.goto('/#agenda');await page.mouse.move(1000,100);await page.goto('/#secretaria');
+  expect(await eyeX()).toBe(0);
+});
+test('toque mantém o olhar neutro e permite carinho',async({browser})=>{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();await page.goto('/#secretaria');
+  await page.getByRole('button',{name:'Fazer carinho no Ziggy',exact:true}).tap();
+  await expect(page.locator('.ziggy-status')).toContainText('Um carinho');
+  expect(await page.locator('.ziggy-companion').evaluate(el=>el.style.getPropertyValue('--ziggy-eye-x'))).toBe('');
+  await page.screenshot({path:'.cache/visual/ziggy-smooth-touch.png',fullPage:true});
+  await context.close();
+});
 for(const width of [390,1440]) test(`Ziggy anima e acompanha a conversa em ${width}px`,async({page})=>{
   await page.setViewportSize({width,height:900});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -12,8 +41,8 @@ for(const width of [390,1440]) test(`Ziggy anima e acompanha a conversa em ${wid
   const input=page.locator('#chat-input');await expect(input).toBeVisible();
   await input.fill('Como está minha agenda hoje?');
   await expect(ziggy).toHaveAttribute('data-state','listening');
-  const start=await page.locator('.ziggy-sprite').evaluate(n=>getComputedStyle(n).backgroundPositionX);
-  await page.waitForFunction(start=>getComputedStyle(document.querySelector('.ziggy-sprite')).backgroundPositionX!==start,start);
+  const start=await page.locator('.ziggy-motion').evaluate(n=>getComputedStyle(n).transform);
+  await page.waitForFunction(start=>getComputedStyle(document.querySelector('.ziggy-motion')).transform!==start,start);
   await page.screenshot({path:`.cache/visual/ziggy-${width}-listening.png`,fullPage:true});
   await input.press('Enter');
   await expect(ziggy).toHaveAttribute('data-state','thinking');
@@ -26,7 +55,7 @@ for(const width of [390,1440]) test(`Ziggy anima e acompanha a conversa em ${wid
   await expect(ziggy).toHaveAttribute('data-state','surprised');
   await expect(page.locator('.chat-message')).toHaveCount(4);
   await page.getByRole('button',{name:'Pausar animações',exact:true}).click();
-  await expect(page.locator('.ziggy-sprite')).toHaveCSS('animation-name','none');
+  await expect(page.locator('.ziggy-motion')).toHaveCSS('animation-name','none');
   await page.getByRole('button',{name:'Retomar animações',exact:true}).click();
   await page.getByRole('button',{name:'Fazer carinho no Ziggy',exact:true}).click();
   await expect(page.locator('.ziggy-status')).toContainText('Um carinho');
@@ -38,7 +67,7 @@ test('Ziggy respeita movimento reduzido e acorda depois de descansar',async({pag
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.clock.install();
   await page.goto('/#secretaria');
-  await expect(page.locator('.ziggy-sprite')).toHaveCSS('animation-name','none');
+  await expect(page.locator('.ziggy-motion')).toHaveCSS('animation-name','none');
   await page.clock.fastForward(46000);
   await expect(page.locator('.ziggy-companion')).toHaveAttribute('data-state','resting');
   await page.getByRole('button',{name:'Conversar com o Ziggy',exact:true}).click();

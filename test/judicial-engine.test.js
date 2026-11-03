@@ -3,8 +3,21 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const context={window:{}};
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../assets/juridico-base.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../judicial-engine.js'),'utf8'),context);
 const engine=context.window.EsteticaJudicialEngine;
+test('arquivo normativo preserva origem, integridade e busca local sem acentos',()=>{
+  const archive=context.window.JuridicoArchive;
+  assert.equal(archive.sections.length,43);
+  assert.ok(archive.text.includes('Art. 41'));
+  assert.equal(require('node:crypto').createHash('sha256').update(archive.text).digest('hex'),archive.textSha256);
+  assert.equal(archive.source,'https://cfbm.gov.br/legislacao/codigo-de-etica/');
+  assert.ok(engine.searchArchive('publicidade').length);
+  assert.ok(engine.searchArchive('SIGILO').length);
+  assert.equal(engine.searchArchive('xyzinexistente').length,0);
+  assert.equal(engine.searchArchive('').length,0);
+  assert.ok(fs.readFileSync(require('node:path').join(__dirname,'../assets/codigo-etica-cfbm-330-2020.txt'),'utf8').replace(/\r\n/g,'\n').includes(archive.text));
+});
 test('casos exigem vínculo coerente e data conferida, sem inferir prazo',()=>{
   const values={clientId:'c1',visitId:'v1',kind:'notice',status:'Em triagem',date:'2026-11-02',summary:'Exemplo de notificação fictícia'};
   const clients=[{id:'c1'},{id:'c2'}],visits=[{id:'v1',clientId:'c1'}];

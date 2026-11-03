@@ -10,6 +10,8 @@
 
 ## Salvaguardas da demonstração
 
+- **Arquivo normativo local (02/11/2026):** somente texto público do Código de Ética obtido do CFBM, com origem/data/método/hash. Busca e download no navegador não enviam dados a API e não persistem consultas. Texto externo é exibido escapado; resultados são referências, sem execução de conteúdo nem interpretação de instruções. Arquivo público não recebe registros de pacientes. Cópia precisa de revisão manual; não determina vigência, autorização de procedimentos ou estratégia jurídica. Agente/modelo local não foi conectado.
+
 - **Casos de estética (02/11/2026):** cadastro administrativo fictício ligado por IDs ao cliente e atendimento. Resumo, status, checklist e acompanhamentos seguem o mesmo armazenamento e backup dos demais registros, sem permissão específica por caso/equipe e sem criptografia no backup JSON. Não há envio a agente de IA ou recebimento de anexos. O formulário exige confirmação de exemplo fictício e avisa para não inserir dados de saúde identificáveis, documentos sigilosos ou número de processo. Isso não detecta dados reais automaticamente e não autoriza uso em produção. Histórico não é trilha imutável nem substitui prontuário; avaliar retenção, base legal, acessos específicos e compartilhamento com advogado antes de usar casos reais.
 
 - A interface avisa para usar somente dados fictícios.

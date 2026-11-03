@@ -4,9 +4,11 @@ Arquivo usado pelo site: `assets/ziggy-sprites-v1.png` (1024 × 1536, PNG RGBA).
 
 Produzido pela ferramenta integrada **image_gen**, sem CLI ou chave de API do projeto. A prancha ilustrada aprovada na conversa foi usada como referência. As fotos originais, pessoas e ambiente doméstico não foram copiadas para o repositório.
 
-O atlas contém quatro quadros por linha e seis linhas: atento/piscando, acompanhando a digitação, pensando, respondendo, surpreso e descansando. O CSS troca os quadros reais; não se limita a mover uma imagem estática. Pequenas diferenças de desenho entre os quadros são próprias da ilustração gerada.
+O atlas original contém quatro quadros por linha e seis linhas: atento/piscando, acompanhando a digitação, pensando, respondendo, surpreso e descansando. As diferenças entre esses desenhos causavam saltos no rosto durante os ciclos. A apresentação atual usa o **primeiro retrato como base estável**, com movimentos contínuos de respiração/aceno e olhos em camadas SVG. A piscada usa somente as regiões dos olhos fechados do terceiro quadro da primeira linha, com máscara suave e transição de opacidade. O atlas original permanece preservado; não há mais ciclos de troca do rosto inteiro nem animação de boca por quadros.
 
-`ziggy.js` controla os estados da interface; `ziggy.css` mostra o atlas. A preparação visual de resposta dura cerca de 480ms. A soneca começa após 45 segundos no estado de espera. Há pausa manual e respeito a `prefers-reduced-motion`. A expressão de surpresa indica resposta local não reconhecida ou falha; não é análise emocional por IA.
+Em computadores com ponteiro fino, os olhos seguem o mouse com suavização por `requestAnimationFrame`, limite de 3,2 × 2,4 unidades na imagem e inclinação máxima de 1,6 grau. Cabeça e olhos se movimentam de forma discreta; fora da janela o olhar volta ao centro. Pausa, preferência de movimento reduzido, toque, soneca e aba oculta desativam o acompanhamento. Frames de suavização são cancelados ao trocar de módulo; quando o alvo é alcançado, o loop para. Coordenadas não são armazenadas ou transmitidas. Em toque, carinho e conversa continuam disponíveis sem seguir o dedo.
+
+`ziggy.js` controla os estados da interface; `ziggy.css` e as máscaras SVG apresentam o retrato. Os estados variam o ritmo dos movimentos e os textos; a soneca fecha os olhos. A preparação visual de resposta dura cerca de 480ms. A soneca começa após 45 segundos no estado de espera. Há pausa manual e respeito a `prefers-reduced-motion`. O estado de surpresa indica resposta local não reconhecida ou falha; não é análise emocional por IA.
 
 ## Prompt de geração
 

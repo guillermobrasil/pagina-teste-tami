@@ -14,6 +14,11 @@ body { background:var(--canvas); }
 .nav-item:hover { background:#21313e !important; }
 .nav-item.active { background:#243643 !important; box-shadow:inset 3px 0 var(--brand) !important; color:#fff6e7 !important; }
 .app-shell .welcome-row h1 { color:#f3eee4 !important; letter-spacing:-.025em; }
+.app-shell #page-title:has(.welcome-logo) { display:flex; align-items:center; gap:16px; }
+.app-shell #page-title:has(.welcome-logo)>span { font:inherit !important; color:inherit; min-width:0; }
+.app-shell .welcome-logo { width:72px; height:72px; flex:0 0 72px; object-fit:contain; }
+@media(max-width:760px) { .app-shell #page-title:has(.welcome-logo) { gap:12px; } .app-shell .welcome-logo { width:52px; height:52px; flex-basis:52px; } }
+@media(max-width:360px) { .app-shell .welcome-logo { width:44px; height:44px; flex-basis:44px; } }
 .welcome-row .eyebrow { color:#c5ad7d !important; letter-spacing:.13em; }
 .panel, .stat-card { border-radius:14px; box-shadow:0 12px 28px #00000012; }
 .stat-card { border-top:2px solid #557084 !important; }

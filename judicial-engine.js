@@ -102,5 +102,12 @@
     if (item.kind === 'council') steps.push('Confira habilitação, responsabilidade técnica e limites do procedimento com o CRBM-6 e o advogado; esta tela não autoriza a atuação.');
     return { priority:item.healthConcern ? 'Prioridade assistencial' : formal ? 'Revisão jurídica prioritária' : 'Organizar acompanhamento', steps, missing, questions:['Quais fatos e documentos ainda precisam ser confirmados?', 'Há comunicação formal ou prazo que o advogado deva conferir?', 'Quem ficará responsável pelo próximo contato e pela revisão?'], sources: item.kind === 'council' ? ['inspection','court','councilNote'] : item.kind === 'advertising' ? ['ethics'] : ['ethics','hygiene'] };
   }
-  window.EsteticaJudicialEngine = { createGuide, regional, caseKinds, caseStatuses, caseDocuments, validateCase, casePlan };
+  const normalizeSearch = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  function searchArchive(query) {
+    const terms = normalizeSearch(query).trim().split(/\s+/).filter(Boolean);
+    if (!terms.length || terms.join('').length < 3) return [];
+    const sections = window.JuridicoArchive?.sections || [];
+    return sections.filter(section => terms.every(term => normalizeSearch(section.text).includes(term))).slice(0,8);
+  }
+  window.EsteticaJudicialEngine = { createGuide, regional, caseKinds, caseStatuses, caseDocuments, validateCase, casePlan, searchArchive };
 })();

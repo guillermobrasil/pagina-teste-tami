@@ -1,0 +1,23 @@
+const {test,expect}=require('@playwright/test');
+for(const width of [390,768])test(`busca e arquivo jurídico sem rede em ${width}px`,async({page,context})=>{
+  await page.setViewportSize({width,height:960});await page.goto('/#juridico');
+  await page.locator('#legal-offline .section-disclosure-toggle').click();
+  await context.setOffline(true);
+  const requests=[];page.on('request',r=>requests.push(r.url()));
+  await page.locator('#legal-local-query').fill('publicidade');
+  await page.getByRole('button',{name:'Buscar no arquivo local'}).click();
+  await expect(page.locator('#legal-local-results')).toContainText('trechos encontrados');
+  await expect(page.locator('.legal-local-result').first()).toContainText('Art.');
+  const downloadPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Baixar texto para consulta'}).click();
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toBe('codigo-etica-cfbm-330-2020.txt');
+  await download.saveAs(`.cache/legal-download-${width}.txt`);
+  expect(require('node:fs').readFileSync(`.cache/legal-download-${width}.txt`,'utf8')).toContain('Art. 41');
+  await page.locator('#legal-local-query').fill('xyzinexistente');
+  await page.getByRole('button',{name:'Buscar no arquivo local'}).click();
+  await expect(page.locator('#legal-local-results')).toContainText('não significa que não exista regra');
+  expect(requests.filter(url=>!url.startsWith('blob:'))).toEqual([]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:`.cache/visual/legal-offline-${width}.png`,fullPage:true});
+});

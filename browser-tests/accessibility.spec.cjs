@@ -10,7 +10,7 @@ for(const width of [320,390,768,1024]) test(`abas abertas, leitura e toque a ${w
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),route).toBe(true);
     for(const button of await page.locator('.section-disclosure-toggle:visible').all()){
       expect((await button.boundingBox()).height,route).toBeGreaterThanOrEqual(44);
-      await expect(button.locator('.section-disclosure-action')).toHaveText('Fechar');
+      await expect(button).toHaveAttribute('aria-expanded','true');
       const ids=(await button.getAttribute('aria-controls')).split(' ');
       for(const id of ids) expect(await page.locator(`[id="${id}"]`).count()).toBe(1);
     }
@@ -27,6 +27,10 @@ for(const width of [320,390,768,1024]) test(`abas abertas, leitura e toque a ${w
 test('brilho, foco visível, estado e movimento reduzido',async({page})=>{
   await page.goto('/#crm');
   const button=page.getByRole('button',{name:'Clientes',exact:true});
+  await expect(button.locator('.section-disclosure-affordance svg')).toHaveCount(1);
+  await expect(button.locator('.section-disclosure-action')).toHaveCount(0);
+  const indicator=button.locator('.section-disclosure-indicator');
+  const closedRotation=await indicator.evaluate(el=>getComputedStyle(el).transform);
   const panel=button.locator('xpath=ancestor::*[@data-disclosure-panel][1]');
   await page.mouse.move(0,0);
   const before=await panel.evaluate(el=>getComputedStyle(el).boxShadow);
@@ -35,7 +39,7 @@ test('brilho, foco visível, estado e movimento reduzido',async({page})=>{
   await page.mouse.move(0,0);await button.focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');
   expect(await button.evaluate(el=>getComputedStyle(el).outlineStyle)).toBe('solid');
   await page.keyboard.press('Enter');await expect(button).toHaveAttribute('aria-expanded','true');
-  await expect(button.locator('.section-disclosure-action')).toHaveText('Fechar');
+  await expect.poll(()=>indicator.evaluate(el=>getComputedStyle(el).transform)).not.toBe(closedRotation);
   await page.keyboard.press('Space');await expect(button).toHaveAttribute('aria-expanded','false');
   await page.emulateMedia({reducedMotion:'reduce'});
   expect(await panel.evaluate(el=>getComputedStyle(el).transitionDuration)).toBe('0s');
@@ -47,8 +51,8 @@ test('toque, menu, atalho de conteúdo e foco no diálogo',async({browser})=>{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const page=await context.newPage();await page.goto('/#crm');
   const button=page.getByRole('button',{name:'Clientes',exact:true});
-  await button.tap();await expect(button.locator('.section-disclosure-action')).toHaveText('Fechar');
-  await button.tap();await expect(button.locator('.section-disclosure-action')).toHaveText('Abrir');
+  await button.tap();await expect(button).toHaveAttribute('aria-expanded','true');
+  await button.tap();await expect(button).toHaveAttribute('aria-expanded','false');
   const menu=page.locator('.mobile-menu');await menu.tap();await expect(menu).toHaveAttribute('aria-expanded','true');
   await page.keyboard.press('Escape');await expect(menu).toHaveAttribute('aria-expanded','false');
   await expect(page.locator('#sidebar')).toBeHidden();

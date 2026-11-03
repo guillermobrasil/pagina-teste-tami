@@ -1,19 +1,38 @@
 /* Mascote local: animação visual, sem microfone, rede ou armazenamento. */
 (function () {
   const states = {
-    idle: {row:0,label:'Estou por aqui.',detail:'Posso ajudar com agenda, financeiro, Marketing e aprovações.'},
-    listening: {row:1,label:'Estou acompanhando sua mensagem.',detail:'Pode escrever com calma. Envie quando estiver pronta.'},
-    thinking: {row:2,label:'Organizando a resposta…',detail:'Conferindo as informações disponíveis no painel.'},
-    speaking: {row:3,label:'Pronto! Veja minha resposta abaixo.',detail:'Se quiser, faça outra pergunta para continuar.'},
-    surprised: {row:4,label:'Pode me dar mais uma pista?',detail:'Tente perguntar sobre agenda, financeiro, Marketing ou aprovações.'},
-    resting: {row:5,label:'Tirando uma sonequinha…',detail:'Comece a escrever ou faça um carinho para me chamar.'}
+    idle: {label:'Estou por aqui.',detail:'Posso ajudar com agenda, financeiro, Marketing e aprovações.'},
+    listening: {label:'Estou acompanhando sua mensagem.',detail:'Pode escrever com calma. Envie quando estiver pronta.'},
+    thinking: {label:'Organizando a resposta…',detail:'Conferindo as informações disponíveis no painel.'},
+    speaking: {label:'Pronto! Veja minha resposta abaixo.',detail:'Se quiser, faça outra pergunta para continuar.'},
+    surprised: {label:'Pode me dar mais uma pista?',detail:'Tente perguntar sobre agenda, financeiro, Marketing ou aprovações.'},
+    resting: {label:'Tirando uma sonequinha…',detail:'Comece a escrever ou faça um carinho para me chamar.'}
   };
-  let state='idle', paused=false, root=null, restTimer, reactionTimer;
+  let state='idle', paused=false, root=null, restTimer, reactionTimer, sequence=0, gazeFrame=0;
+  let gaze={x:0,y:0}, target={x:0,y:0};
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const pointer=matchMedia('(hover: hover) and (pointer: fine)');
+  function resetGaze() {
+    cancelAnimationFrame(gazeFrame); gazeFrame=0; gaze={x:0,y:0}; target={x:0,y:0};
+    for (const key of ['eye-x','eye-y','head-x','tilt']) root?.style.removeProperty(`--ziggy-${key}`);
+  }
+  function canTrack() { return root?.isConnected && !paused && !reduced.matches && pointer.matches && state!=='resting' && !document.hidden; }
+  function easeGaze() {
+    if (!canTrack()) { resetGaze(); return; }
+    gaze.x+=(target.x-gaze.x)*.14; gaze.y+=(target.y-gaze.y)*.14;
+    root.style.setProperty('--ziggy-eye-x',`${(gaze.x*3.2).toFixed(3)}px`);
+    root.style.setProperty('--ziggy-eye-y',`${(gaze.y*2.4).toFixed(3)}px`);
+    root.style.setProperty('--ziggy-head-x',`${(gaze.x*1.8).toFixed(3)}px`);
+    root.style.setProperty('--ziggy-tilt',`${(gaze.x*1.6).toFixed(3)}deg`);
+    if (Math.abs(target.x-gaze.x)+Math.abs(target.y-gaze.y)>.005) gazeFrame=requestAnimationFrame(easeGaze);
+    else gazeFrame=0;
+  }
+  function aim(x,y) { target={x,y}; if (!gazeFrame) gazeFrame=requestAnimationFrame(easeGaze); }
   const clearTimers = () => { clearTimeout(restTimer); clearTimeout(reactionTimer); };
   function paint() {
     if (!root?.isConnected) return;
     root.dataset.state=state; root.classList.toggle('is-paused',paused);
-    root.style.setProperty('--ziggy-row',`${states[state].row*20}%`);
+    if (!canTrack()) resetGaze();
     const label=root.querySelector('.ziggy-status'), detail=root.querySelector('.ziggy-detail');
     if (label.textContent!==states[state].label) label.textContent=states[state].label;
     if (detail.textContent!==states[state].detail) detail.textContent=states[state].detail;
@@ -26,10 +45,12 @@
     if (next==='idle' && root?.isConnected) restTimer=setTimeout(()=>setState('resting'),45000);
   }
   function render() {
-    return `<section class="ziggy-companion" aria-label="Ziggy, seu secretário virtual" data-state="${state}"><div class="ziggy-stage"><button type="button" class="ziggy-pet" data-ziggy-action="pet" aria-label="Fazer carinho no Ziggy"><span class="ziggy-sprite" aria-hidden="true"></span></button><span class="ziggy-nameplate">ZIGGY <span>Seu secretário virtual</span></span></div><div class="ziggy-intro"><p class="eyebrow">UMA COMPANHIA PARA SUA ROTINA</p><h2>Oi, eu sou o Ziggy.</h2><p class="ziggy-status" role="status" aria-live="polite">${states[state].label}</p><p class="ziggy-detail">${states[state].detail}</p><div class="ziggy-actions"><button type="button" class="primary-button" data-ziggy-action="start">Conversar com o Ziggy</button><button type="button" class="secondary-button" data-ziggy-action="motion" aria-pressed="${paused}">${paused ? 'Retomar animações' : 'Pausar animações'}</button></div><small>Carinhas animadas, respostas por regras locais. Sem voz ou IA externa conectada.</small></div></section>`;
+    const uid=`ziggy-eyes-${++sequence}`;
+    const eyes=`<svg class="ziggy-eyes" viewBox="0 0 256 256" aria-hidden="true" focusable="false"><defs><radialGradient id="${uid}-fade"><stop offset="75%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient><mask id="${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256"><ellipse cx="106" cy="96" rx="13" ry="12" fill="url(#${uid}-fade)"/><ellipse cx="165" cy="87" rx="12" ry="12" fill="url(#${uid}-fade)"/></mask></defs><g mask="url(#${uid})"><image class="ziggy-eye-art" href="assets/ziggy-sprites-v1.png" width="1024" height="1536"/><image class="ziggy-blink" href="assets/ziggy-sprites-v1.png" x="-512" width="1024" height="1536"/></g></svg>`;
+    return `<section class="ziggy-companion" aria-label="Ziggy, seu secretário virtual" data-state="${state}"><div class="ziggy-stage"><button type="button" class="ziggy-pet" data-ziggy-action="pet" aria-label="Fazer carinho no Ziggy"><span class="ziggy-motion" aria-hidden="true"><span class="ziggy-sprite">${eyes}</span></span></button><span class="ziggy-nameplate">ZIGGY <span>Seu secretário virtual</span></span></div><div class="ziggy-intro"><p class="eyebrow">UMA COMPANHIA PARA SUA ROTINA</p><h2>Oi, eu sou o Ziggy.</h2><p class="ziggy-status" role="status" aria-live="polite">${states[state].label}</p><p class="ziggy-detail">${states[state].detail}</p><div class="ziggy-actions"><button type="button" class="primary-button" data-ziggy-action="start">Conversar com o Ziggy</button><button type="button" class="secondary-button" data-ziggy-action="motion" aria-pressed="${paused}">${paused ? 'Retomar animações' : 'Pausar animações'}</button></div><small>Movimentos suaves e olhar que acompanha o mouse. Respostas por regras locais, sem voz ou IA externa conectada.</small></div></section>`;
   }
   function mount(page) {
-    clearTimers(); root=page==='secretaria' ? document.querySelector('.ziggy-companion') : null;
+    clearTimers(); resetGaze(); root=page==='secretaria' ? document.querySelector('.ziggy-companion') : null;
     if (!root) { state='idle'; return; }
     paint();
     if (state==='idle') restTimer=setTimeout(()=>setState('resting'),45000);
@@ -39,6 +60,15 @@
     setState(unknown ? 'surprised' : 'speaking');
     reactionTimer=setTimeout(()=>setState('idle'),unknown ? 6500 : 5000);
   }
+  document.addEventListener('pointermove',event=>{
+    if (event.pointerType==='touch' || !canTrack()) return;
+    const rect=root.querySelector('.ziggy-pet').getBoundingClientRect();
+    if (rect.bottom<0 || rect.top>innerHeight) { resetGaze(); return; }
+    aim(Math.tanh((event.clientX-rect.x-rect.width/2)/260),Math.tanh((event.clientY-rect.y-rect.height/2)/240));
+  },{passive:true});
+  document.addEventListener('pointerout',event=>{if (!event.relatedTarget && canTrack()) aim(0,0);});
+  document.addEventListener('visibilitychange',()=>{if (document.hidden) resetGaze();});
+  reduced.addEventListener('change',resetGaze); pointer.addEventListener('change',resetGaze);
   document.addEventListener('input',event=>{
     if (event.target.id==='chat-input' && state!=='thinking') setState(event.target.value.trim() ? 'listening' : 'idle');
   });

@@ -151,7 +151,6 @@
   function setOpen(entry, open) {
     entry.button.setAttribute('aria-expanded', String(open));
     entry.button.title = open ? 'Recolher informações' : 'Expandir informações';
-    entry.button.querySelector('.section-disclosure-action').textContent = open ? 'Fechar' : 'Abrir';
     entry.box.classList.toggle('is-collapsed', !open);
     for (const {node, hidden} of entry.body) node.hidden = !open || hidden;
     states.set(entry.key, open);
@@ -181,10 +180,10 @@
       const label=document.createElement('span'); label.className='section-disclosure-label';
       while (title.firstChild) label.append(title.firstChild);
       button.append(label); addIcon(box,header,button,name,page);
-      const indicator = document.createElement('span'); indicator.className = 'section-disclosure-indicator'; indicator.setAttribute('aria-hidden','true'); indicator.textContent = '›';
-      const action = document.createElement('span'); action.className = 'section-disclosure-action'; action.setAttribute('aria-hidden','true');
+      const indicator = document.createElement('span'); indicator.className = 'section-disclosure-indicator'; indicator.setAttribute('aria-hidden','true');
+      indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>';
       const affordance = document.createElement('span'); affordance.className = 'section-disclosure-affordance'; affordance.setAttribute('aria-hidden','true');
-      affordance.append(action,indicator); button.append(affordance); title.append(button);
+      affordance.append(indicator); button.append(affordance); title.append(button);
       const uid = ++sequence;
       const items = content.map((node,index) => { node.id ||= `section-content-${uid}-${index}`; return {node,hidden:node.hidden}; });
       button.setAttribute('aria-controls', items.map(({node})=>node.id).join(' '));
