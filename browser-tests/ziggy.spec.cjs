@@ -1,4 +1,24 @@
 const {test,expect}=require('@playwright/test');
+test('Secretário sorri ocasionalmente, mostra a língua no carinho e respeita pausa',async({page})=>{
+  await page.clock.install();await page.goto('/#secretaria');
+  const root=page.locator('.ziggy-companion');
+  await expect(page.locator('#page-title')).toContainText('Secretário virtual');
+  await expect(page.locator('a[data-page=secretaria]')).toContainText('Secretário virtual');
+  await expect(root).not.toHaveClass(/is-happy/);
+  await page.clock.fastForward(10100);await expect(root).toHaveClass(/is-happy/);
+  await page.clock.fastForward(3000);await expect(root).not.toHaveClass(/is-happy/);
+  await page.getByRole('button',{name:'Fazer carinho no Ziggy',exact:true}).click();
+  await expect(root).toHaveClass(/is-happy/);
+  await expect(page.locator('.ziggy-happy-mouth .ziggy-tongue')).toHaveCount(1);
+  await page.getByRole('button',{name:'Pausar animações',exact:true}).click();
+  await expect(root).not.toHaveClass(/is-happy/);
+  await page.clock.fastForward(12000);await expect(root).not.toHaveClass(/is-happy/);
+  await page.getByRole('button',{name:'Retomar animações',exact:true}).click();
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.getByRole('button',{name:'Fazer carinho no Ziggy',exact:true}).click();
+  await expect(page.locator('.ziggy-happy-mouth')).toHaveCSS('opacity','0');
+  await expect(root).not.toHaveClass(/is-happy/);
+});
 test('olhar segue o ponteiro com limite e respeita pausa, movimento reduzido e saída',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});await page.goto('/#secretaria');
   const root=page.locator('.ziggy-companion');
@@ -24,6 +44,7 @@ test('toque mantém o olhar neutro e permite carinho',async({browser})=>{
   const page=await context.newPage();await page.goto('/#secretaria');
   await page.getByRole('button',{name:'Fazer carinho no Ziggy',exact:true}).tap();
   await expect(page.locator('.ziggy-status')).toContainText('Um carinho');
+  await expect(page.locator('.ziggy-happy-mouth')).toHaveCSS('opacity','1');
   expect(await page.locator('.ziggy-companion').evaluate(el=>el.style.getPropertyValue('--ziggy-eye-x'))).toBe('');
   await page.screenshot({path:'.cache/visual/ziggy-smooth-touch.png',fullPage:true});
   await context.close();

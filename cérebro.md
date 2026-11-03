@@ -36,7 +36,7 @@ O documento descreve a implementação atual e identifica planos futuros. Não r
 Ordem atual das abas principais:
 
 1. Visão geral.
-2. Secretária virtual.
+2. Secretário virtual.
 3. Clientes e Relacionamento.
 4. Marketing.
 5. Agenda.
@@ -83,18 +83,20 @@ Decisões visuais:
 - Pendências da rotina reúne retornos vencidos/para hoje (informados ou estimados), pagamentos pendentes ou não informados, custos ausentes e aprovações. Filtros por categoria e atalhos para ficha/edição/revisão. Clientes/atendimentos fictícios são excluídos dessas pendências; aprovações de demonstração continuam como exemplos.
 - A prévia de Marketing ainda contém conteúdo de apresentação; não interpretar toda a página inicial como um relatório completo de gestão.
 
-### Secretária virtual
+### Secretário virtual
 
 - Consulta registros locais de agenda, financeiro, aprovações e Marketing por regras em `secretaria-engine.js`.
 - Apresenta perguntas úteis que podem ser clicadas, sem digitação.
 - Clicar em sugestões mantém os atalhos disponíveis; escrever uma pergunta própria pode ocultá-los durante aquela sessão.
 - Mensagens e respostas aparecem na conversa da sessão; `chat` não é persistido no armazenamento local nem nos backups exportados.
 
-- Ziggy é o mascote animado da Secretária, baseado na ilustração do cachorro enviada/aprovada pelo usuário. O atlas PNG RGBA local de 24 quadros (4 colunas × 6 linhas, 1024 × 1536), `assets/ziggy-sprites-v1.png`, permanece preservado; a apresentação atual usa o primeiro retrato estável e regiões dos olhos do quadro de piscada, combinados por máscaras SVG. Movimentos de respiração/aceno são contínuos por CSS; não há mais troca repetida do rosto inteiro nem boca por quadros. A ilustração foi produzida com image_gen; fotos originais/pessoas não foram copiadas para o projeto.
+- Ziggy é o mascote animado do Secretário, baseado na ilustração do cachorro enviada/aprovada pelo usuário. O atlas PNG RGBA local de 24 quadros (4 colunas × 6 linhas, 1024 × 1536), `assets/ziggy-sprites-v1.png`, permanece preservado; a apresentação atual usa o primeiro retrato estável e regiões dos olhos do quadro de piscada, combinados por máscaras SVG. Movimentos de respiração/aceno são contínuos por CSS; não há mais troca repetida do rosto inteiro nem boca por quadros. A ilustração foi produzida com image_gen; fotos originais/pessoas não foram copiadas para o projeto.
 - Estados: atento/piscando, acompanhando digitação, preparando resposta, respondendo, surpreso quando o assunto não é reconhecido ou ocorre falha, e descansando após 45 segundos em espera. A preparação visual tem transição de cerca de 480ms; não representa espera por API. Não há interpretação emocional por IA nem captura de áudio.
 - Clicar no Ziggy faz carinho; Conversar com o Ziggy abre a caixa recolhida da conversa e foca o campo. Animações podem ser pausadas e respeitam movimento reduzido do sistema. O personagem aparece apenas nesta aba, sem modificar a Visão geral.
+- Nome visível padronizado para **Secretário virtual**, inclusive menu, título, conversa, visão geral, ajuda, voz planejada e descrições dos agentes. A rota `#secretaria`, os identificadores e o nome do arquivo do motor permanecem compatíveis com links e dados existentes.
+- Boquinha feliz: usa somente um recorte fixo da boca com língua da própria ilustração (segundo quadro da quarta linha), alinhado e misturado por máscara SVG suave. Entrada/saída por opacidade e movimento local de 0,5 unidade, sem sequência de quadros ou troca do rosto/olhos. Aparece por 2,8s ao receber carinho/responder e ocasionalmente após 10s de espera; interrompida ao digitar, preparar resposta, descansar, pausar, reduzir movimento, ocultar a aba ou sair do módulo. Não representa sincronização de fala/áudio.
 - Olhos acompanham o ponteiro fino com suavização por `requestAnimationFrame`, limite de 3,2 × 2,4 unidades de imagem e leve inclinação da cabeça (até 1,6 grau). Retorna ao centro ao sair da janela; pausa, toque, movimento reduzido, soneca e aba oculta desativam o acompanhamento. Loop encerra ao alcançar o alvo e é cancelado ao trocar de módulo; sem coordenadas armazenadas, câmera ou API. Estados alteram texto/ritmo e soneca fecha os olhos; não há detecção emocional.
-- O envio bloqueia perguntas duplicadas enquanto prepara a resposta, recupera o formulário em falhas e não força voltar à Secretária caso o usuário troque de aba. Respostas pendentes são descartadas se o objeto de dados/sessão mudar. O chat deixa de chamar `save()` a cada pergunta: a conversa segue somente em memória, sem gravação de documentos/backups ou chamadas externas para responder.
+- O envio bloqueia perguntas duplicadas enquanto prepara a resposta, recupera o formulário em falhas e não força voltar à Secretário caso o usuário troque de aba. Respostas pendentes são descartadas se o objeto de dados/sessão mudar. O chat deixa de chamar `save()` a cada pergunta: a conversa segue somente em memória, sem gravação de documentos/backups ou chamadas externas para responder.
 
 - Existe botão de voz planejado e desativado. A integração futura deve ter custo avaliado antes de ativar.
 - Não realiza avaliação clínica, prescrição ou recomendação individual de procedimento/dose.
@@ -204,10 +206,10 @@ O manifesto está em `agents.js`. Os perfis são descrições de estrutura futur
 
 | Área | Especialização prevista | Integrações previstas |
 | --- | --- | --- |
-| Secretária | Rotina de clínica estética e consulta das áreas pertinentes | Agenda, coworking, mensagens e voz opcional |
-| Relacionamento | Estratégias de acompanhamento e retorno | Clientes, agenda, Marketing e secretária |
+| Secretário | Rotina de clínica estética e consulta das áreas pertinentes | Agenda, coworking, mensagens e voz opcional |
+| Relacionamento | Estratégias de acompanhamento e retorno | Clientes, agenda, Marketing e secretário |
 | Marketing | Marketing de estética avançada e criação de conteúdo | Canva, identidade e redes sociais |
-| Agenda | Organização de horários e confirmações | Google Agenda, coworking e secretária |
+| Agenda | Organização de horários e confirmações | Google Agenda, coworking e secretário |
 | WhatsApp | Respostas administrativas revisadas pela Tami | WhatsApp Business Platform e aprovações |
 | Financeiro | Organização financeira e apoio à contabilidade | Exportações e eventual sistema contábil |
 | Jurídico | Organização jurídica e regulatória | Fontes oficiais e revisão profissional |
@@ -249,7 +251,7 @@ Antes de integrar: definir escopo mínimo de dados, permissões, aprovação, cu
 | `dark-theme.css`, `readability.css`, `professional-theme.css` | Tema escuro, leitura e ajustes visuais; ordem de carregamento importa |
 | `assets/` | Recursos visuais, incluindo o monograma oficial |
 | `server.js` | Servidor local com lista de arquivos públicos permitidos, bloqueio de `.env`/Git/testes/banco, configuração pública do Supabase via endpoint e sem cache; padrão `127.0.0.1:3000` |
-| `ziggy.js`, `ziggy.css`, `assets/ziggy-sprites-v1.png` | Estados e animação local do mascote da Secretária; prompts em `ZIGGY-ARTE.md` |
+| `ziggy.js`, `ziggy.css`, `assets/ziggy-sprites-v1.png` | Estados e animação local do mascote do Secretário; prompts em `ZIGGY-ARTE.md` |
 | `section-disclosures.js`, `section-disclosures.css` | Caixas recolhíveis nas abas, agrupamento de seções e validação acessível |
 | `tami-theme.css`, `tami-collection.js` | Identidade visual do painel e modelos locais de Marketing |
 | `workflow-engine.js` | Períodos, totais financeiros e pendências |
@@ -275,7 +277,7 @@ O servidor estático é para desenvolvimento local; não é uma infraestrutura p
 
 Verificação de 02/11/2026 nesta entrega: **32 testes Node e 17 testes Chromium aprovados**, sintaxe JavaScript, build e `git diff --check` aprovados. Capturas inspecionadas de agenda, login, atendimento, financeiro, Marketing, editor e Ziggy, em larguras emuladas de 360/390/768/1440px (Marketing/editor: 390 e 1440px); não houve teste em aparelho físico. Login/envio/conflito no navegador foram testados com API simulada; RLS, gravação, versões e conflito também foram exercitados no banco real com usuários sintéticos e rollback. Advisor de segurança do projeto sem alertas. Cadastro/confirmação por e-mail reais e backup externo agendado/restauração de dump do projeto não foram testados.
 
-Cobertura existente inclui motores de CRM/Marketing/secretária, navegação de todas as áreas, identidade visual, exportação em ambiente simulado, estratégias e aprovações, cadastro/atendimento/recebimentos, edição sem duplicidade, persistência, recuperação e rejeição de sobreposição na agenda.
+Cobertura existente inclui motores de CRM/Marketing/secretário, navegação de todas as áreas, identidade visual, exportação em ambiente simulado, estratégias e aprovações, cadastro/atendimento/recebimentos, edição sem duplicidade, persistência, recuperação e rejeição de sobreposição na agenda.
 
 Limites e próximos trabalhos:
 
@@ -313,6 +315,10 @@ Em cada tarefa de desenvolvimento:
 Se a alteração for apenas documental, informar isso; não inventar execução de testes. Não registrar como concluída uma integração ou revisão apenas planejada.
 
 ## 12. Histórico resumido
+
+- **02/11/2026 — envio do Secretário Ziggy solicitado pelo usuário:** entrega do nome masculino nas telas e da expressão feliz com boquinha/língua, mantendo olhos e rosto estáveis. Verificação anterior da mesma implementação: 37 testes Node, 14 Chromium, build, sintaxe e diff aprovados. Somente código, testes e documentação; dados locais, credenciais e capturas não integram o commit. Conferir publicação pelo commit remoto e arquivos públicos após o envio.
+
+- **02/11/2026 — Secretário e boquinha feliz do Ziggy:** nomes visíveis ajustados para masculino, mantendo rota/identificadores. Expressão feliz com língua da própria pintura, misturada somente na região da boca por máscara, opacidade e oscilação contínua pequena. Surge no carinho/resposta e ocasionalmente em espera; preservados olhos e limites de movimento. Verificação: 37 testes Node, 14 Chromium (Ziggy e acessibilidade/responsividade), build, sintaxe e diff aprovados. Captura ampliada da boca inspecionada e toque emulado testado; sem dispositivo físico ou áudio. Sem envio ao GitHub nesta entrega.
 
 - **02/11/2026 — envio solicitado pelo usuário:** entrega conjunta das setas gráficas nas caixas, arquivo normativo local/busca sem API, monograma na saudação e animação suave/olhar do Ziggy. Verificação final antes do envio: 37 testes Node, 32 Chromium, build e diff aprovados. Arquivos públicos e documentação apenas; `.env`, capturas, downloads de teste e dados do navegador permanecem fora do commit. Conferir o resultado de publicação pelo hash remoto e pelos arquivos servidos no Pages.
 

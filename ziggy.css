@@ -6,6 +6,10 @@
 .ziggy-eyes { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .ziggy-eye-art { transform:translate(var(--ziggy-eye-x,0px),var(--ziggy-eye-y,0px)); }
 .ziggy-blink { opacity:0; animation:ziggy-blink 6.7s linear infinite; }
+.ziggy-happy-mouth { opacity:0; transition:opacity .4s ease; }
+.ziggy-companion.is-happy .ziggy-happy-mouth { opacity:1; }
+.ziggy-companion.is-happy .ziggy-tongue { animation:ziggy-pant 1.15s ease-in-out infinite; }
+.ziggy-companion.is-paused .ziggy-happy-mouth { opacity:0; transition:none; }
 .ziggy-companion[data-state=listening] .ziggy-motion { animation-duration:4.8s; }
 .ziggy-companion[data-state=thinking] .ziggy-motion { animation-duration:4.2s; }
 .ziggy-companion[data-state=speaking] .ziggy-motion { animation-name:ziggy-nod; animation-duration:2.8s; }
@@ -29,6 +33,7 @@
 @keyframes ziggy-breathe { 0%,100% { transform:translateY(1px) scale(1); } 50% { transform:translateY(-1px) scale(1.008); } }
 @keyframes ziggy-nod { 0%,100% { transform:translateY(0) rotate(-.25deg); } 50% { transform:translateY(1.8px) rotate(.4deg); } }
 @keyframes ziggy-blink { 0%,43%,48%,100% { opacity:0; } 45%,46% { opacity:1; } }
+@keyframes ziggy-pant { 0%,100% { transform:translateY(0); } 50% { transform:translateY(.5px); } }
 @media(max-width:760px) {
   .ziggy-companion { grid-template-columns:minmax(0,1fr); padding:22px 18px; gap:20px; text-align:center; }
   .ziggy-pet { width:186px; height:186px; }
@@ -40,3 +45,4 @@
   .chat-panel .chat-form input { min-width:0; flex:1 1 180px; }
 }
 @media(prefers-reduced-motion:reduce) { .ziggy-motion,.ziggy-blink { animation:none !important; } .ziggy-blink { opacity:0 !important; } }
+@media(prefers-reduced-motion:reduce) { .ziggy-happy-mouth { opacity:0 !important; transition:none; } .ziggy-tongue { animation:none !important; } }

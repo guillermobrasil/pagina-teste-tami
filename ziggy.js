@@ -10,6 +10,7 @@
   };
   let state='idle', paused=false, root=null, restTimer, reactionTimer, sequence=0, gazeFrame=0;
   let gaze={x:0,y:0}, target={x:0,y:0};
+  let smileTimer=0, smileEndTimer=0, happy=false;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const pointer=matchMedia('(hover: hover) and (pointer: fine)');
   function resetGaze() {
@@ -28,10 +29,20 @@
     else gazeFrame=0;
   }
   function aim(x,y) { target={x,y}; if (!gazeFrame) gazeFrame=requestAnimationFrame(easeGaze); }
-  const clearTimers = () => { clearTimeout(restTimer); clearTimeout(reactionTimer); };
+  function clearSmile() { clearTimeout(smileTimer); clearTimeout(smileEndTimer); smileTimer=0; smileEndTimer=0; happy=false; }
+  function canSmile() { return root?.isConnected && !paused && !reduced.matches && !document.hidden && ['idle','speaking'].includes(state); }
+  function smileFor(duration=2800) {
+    if (!canSmile()) return;
+    clearSmile(); happy=true;
+    smileEndTimer=setTimeout(()=>{happy=false; smileEndTimer=0; paint();},duration);
+    paint();
+  }
+  const clearTimers = () => { clearTimeout(restTimer); clearTimeout(reactionTimer); clearSmile(); };
   function paint() {
     if (!root?.isConnected) return;
     root.dataset.state=state; root.classList.toggle('is-paused',paused);
+    root.classList.toggle('is-happy',happy && canSmile());
+    if (state==='idle' && canSmile() && !happy && !smileTimer) smileTimer=setTimeout(()=>{smileTimer=0; smileFor();},10000);
     if (!canTrack()) resetGaze();
     const label=root.querySelector('.ziggy-status'), detail=root.querySelector('.ziggy-detail');
     if (label.textContent!==states[state].label) label.textContent=states[state].label;
@@ -42,11 +53,12 @@
   function setState(next) {
     if (!states[next]) return;
     clearTimers(); state=next; paint();
+    if (next==='speaking') smileFor();
     if (next==='idle' && root?.isConnected) restTimer=setTimeout(()=>setState('resting'),45000);
   }
   function render() {
     const uid=`ziggy-eyes-${++sequence}`;
-    const eyes=`<svg class="ziggy-eyes" viewBox="0 0 256 256" aria-hidden="true" focusable="false"><defs><radialGradient id="${uid}-fade"><stop offset="75%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient><mask id="${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256"><ellipse cx="106" cy="96" rx="13" ry="12" fill="url(#${uid}-fade)"/><ellipse cx="165" cy="87" rx="12" ry="12" fill="url(#${uid}-fade)"/></mask></defs><g mask="url(#${uid})"><image class="ziggy-eye-art" href="assets/ziggy-sprites-v1.png" width="1024" height="1536"/><image class="ziggy-blink" href="assets/ziggy-sprites-v1.png" x="-512" width="1024" height="1536"/></g></svg>`;
+    const eyes=`<svg class="ziggy-eyes" viewBox="0 0 256 256" aria-hidden="true" focusable="false"><defs><radialGradient id="${uid}-fade"><stop offset="75%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient><mask id="${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256"><ellipse cx="106" cy="96" rx="13" ry="12" fill="url(#${uid}-fade)"/><ellipse cx="165" cy="87" rx="12" ry="12" fill="url(#${uid}-fade)"/></mask></defs><g mask="url(#${uid})"><image class="ziggy-eye-art" href="assets/ziggy-sprites-v1.png" width="1024" height="1536"/><image class="ziggy-blink" href="assets/ziggy-sprites-v1.png" x="-512" width="1024" height="1536"/></g><g class="ziggy-happy-mouth"><defs><radialGradient id="${uid}-mouth-fade"><stop offset="50%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient><mask id="${uid}-mouth" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256"><ellipse cx="145" cy="158" rx="24" ry="18" fill="url(#${uid}-mouth-fade)"/></mask></defs><g mask="url(#${uid}-mouth)"><image class="ziggy-tongue" href="assets/ziggy-sprites-v1.png" x="-269" y="-770" width="1024" height="1536"/></g></g></svg>`;
     return `<section class="ziggy-companion" aria-label="Ziggy, seu secretário virtual" data-state="${state}"><div class="ziggy-stage"><button type="button" class="ziggy-pet" data-ziggy-action="pet" aria-label="Fazer carinho no Ziggy"><span class="ziggy-motion" aria-hidden="true"><span class="ziggy-sprite">${eyes}</span></span></button><span class="ziggy-nameplate">ZIGGY <span>Seu secretário virtual</span></span></div><div class="ziggy-intro"><p class="eyebrow">UMA COMPANHIA PARA SUA ROTINA</p><h2>Oi, eu sou o Ziggy.</h2><p class="ziggy-status" role="status" aria-live="polite">${states[state].label}</p><p class="ziggy-detail">${states[state].detail}</p><div class="ziggy-actions"><button type="button" class="primary-button" data-ziggy-action="start">Conversar com o Ziggy</button><button type="button" class="secondary-button" data-ziggy-action="motion" aria-pressed="${paused}">${paused ? 'Retomar animações' : 'Pausar animações'}</button></div><small>Movimentos suaves e olhar que acompanha o mouse. Respostas por regras locais, sem voz ou IA externa conectada.</small></div></section>`;
   }
   function mount(page) {
@@ -67,8 +79,8 @@
     aim(Math.tanh((event.clientX-rect.x-rect.width/2)/260),Math.tanh((event.clientY-rect.y-rect.height/2)/240));
   },{passive:true});
   document.addEventListener('pointerout',event=>{if (!event.relatedTarget && canTrack()) aim(0,0);});
-  document.addEventListener('visibilitychange',()=>{if (document.hidden) resetGaze();});
-  reduced.addEventListener('change',resetGaze); pointer.addEventListener('change',resetGaze);
+  document.addEventListener('visibilitychange',()=>{if (document.hidden) {resetGaze();clearSmile();} paint();});
+  reduced.addEventListener('change',()=>{resetGaze();clearSmile();paint();}); pointer.addEventListener('change',resetGaze);
   document.addEventListener('input',event=>{
     if (event.target.id==='chat-input' && state!=='thinking') setState(event.target.value.trim() ? 'listening' : 'idle');
   });
@@ -78,7 +90,7 @@
   document.addEventListener('click',event=>{
     const action=event.target.closest('[data-ziggy-action]')?.dataset.ziggyAction;
     if (!action) return;
-    if (action==='motion') { paused=!paused; paint(); return; }
+    if (action==='motion') { paused=!paused; clearSmile(); paint(); return; }
     if (action==='start') {
       const form=document.querySelector('#chat-form');
       if (!form) return;

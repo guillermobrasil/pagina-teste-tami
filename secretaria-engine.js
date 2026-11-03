@@ -1,4 +1,4 @@
-/* Respostas determinísticas locais para a Secretária Virtual. Sem rede ou IA generativa. */
+/* Respostas determinísticas locais para o Secretário Virtual. Sem rede ou IA generativa. */
 (function attachSecretaryEngine(root) {
   const normalize = (value = '') => String(value).toLocaleLowerCase('pt-BR')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
@@ -91,7 +91,7 @@
       return `Na área Marketing você pode criar posts, carrosséis, capas e Stories, editar a arte e salvar rascunhos localmente.${list} As sugestões do estrategista são modelos demonstrativos, sem IA conectada. Que formato ou assunto você quer preparar?`;
     }
     if (intent.name === 'precos') return 'Não há uma tabela de preços ou catálogo de serviços cadastrado neste protótipo, então não consigo informar um valor sem inventar. Se quiser preparar uma divulgação, informe a condição comercial exata e autorizada pela profissional; a peça ainda precisará de revisão.';
-    if (intent.name === 'procedimentos') return 'Posso ajudar a organizar uma pauta educativa geral, mas esta secretária não avalia casos nem recomenda procedimentos, doses, contraindicações ou resultados clínicos. Revise qualquer conteúdo técnico e confirme sua adequação profissional antes de usar. Você quer montar uma pauta de Marketing ou precisa de ajuda administrativa?';
+    if (intent.name === 'procedimentos') return 'Posso ajudar a organizar uma pauta educativa geral, mas este secretário não avalia casos nem recomenda procedimentos, doses, contraindicações ou resultados clínicos. Revise qualquer conteúdo técnico e confirme sua adequação profissional antes de usar. Você quer montar uma pauta de Marketing ou precisa de ajuda administrativa?';
     if (intent.name === 'geral') return 'Posso consultar os compromissos e lançamentos demonstrativos salvos, mostrar pendências locais ou orientar sobre Marketing. A conversa não envia mensagens nem altera nada fora deste navegador. Qual dessas áreas você quer ver?';
     return 'Não consegui identificar o assunto com segurança. Posso consultar agenda, lançamentos financeiros e aprovações salvas, ou orientar sobre Marketing, preços cadastrados (não há tabela nesta versão) e pautas educativas. Pode reformular sua pergunta?';
   }
