@@ -203,6 +203,8 @@ test('dados locais corrompidos tentam recuperar a última cópia válida', () =>
   const app = createApp(store);
   assert.doesNotThrow(() => JSON.parse(store.get(key)));
   app.navigate('agenda');
+  // A recuperação não depende do dia atual nem do fuso do executor.
+  app.button('agenda-select-day', { date: backup.appointments[0].date });
   assert.match(app.document.querySelector('#workspace-view').innerHTML, /Horário recuperado/);
   app.navigate('configuracoes');
   assert.match(app.document.querySelector('#workspace-view').innerHTML, /cópia local anterior foi recuperada/);
