@@ -343,7 +343,7 @@ test('chat da secretária responde a várias intenções e mantém contexto some
   assert.match(view, /Bastidores do espaço/);
   view = await send('Quanto custa Botox?');
   assert.match(view, /Não há uma tabela de preços/);
-  const saved = JSON.parse(app.store.get('estetica-pro-ia-demo-v1'));
+  const saved = JSON.parse(app.store.get('estetica-pro-ia-demo-v1') || '{"chat":[]}');
   assert.equal(saved.chat.length, 0, 'mensagens não são persistidas no navegador');
   assert.match(view, /Não há IA generativa/);
 });

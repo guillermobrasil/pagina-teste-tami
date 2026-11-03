@@ -1,0 +1,45 @@
+#workspace-view .section-disclosure-toggle {
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  width:100%; min-height:44px; padding:4px 0; margin:0;
+  border:0; border-radius:5px; background:transparent !important;
+  font:inherit !important; color:inherit !important; text-align:left;
+  white-space:normal; cursor:pointer; box-shadow:none;
+}
+#workspace-view .section-disclosure-indicator {
+  margin-left:auto; flex:0 0 20px; text-align:center;
+  font:400 28px/1 Arial,sans-serif !important; color:#cdb68b !important;
+  transform:rotate(90deg); transition:transform .15s ease;
+}
+#workspace-view .is-collapsed .section-disclosure-indicator { transform:rotate(0deg); }
+#workspace-view .disclosure-panel { min-width:0; }
+#workspace-view .disclosure-panel.is-collapsed {
+  min-height:0 !important; height:auto; align-self:start;
+}
+#workspace-view .disclosure-panel.is-collapsed>.disclosure-heading { margin-bottom:0; padding-bottom:0; border-bottom:0; }
+#workspace-view .disclosure-panel.is-collapsed>.disclosure-heading p:not(.eyebrow),
+#workspace-view .disclosure-panel.is-collapsed>.disclosure-heading small { display:none; }
+#workspace-view .disclosure-heading { cursor:pointer; }
+#workspace-view .disclosure-heading>div:has(h2,h3,h4) { flex:1; min-width:0; }
+#workspace-view .disclosure-heading>p { min-width:0; overflow-wrap:anywhere; }
+#workspace-view .disclosure-heading :is(h2,h3,h4) { width:100%; margin-block:0; }
+#workspace-view .disclosure-generated-heading { align-items:stretch; flex-direction:column; gap:4px; }
+#workspace-view .disclosure-generated-heading>.record-top { width:100%; }
+#workspace-view [data-disclosure-container] { min-height:0; }
+.finance-page>.disclosure-section { margin-top:16px; }
+.settings-form>.disclosure-section { padding:18px; }
+.settings-form>.disclosure-section>.panel-heading { margin-bottom:12px; }
+.drafts-disclosure { margin-block:20px; }
+.drafts-disclosure>.studio-drafts-heading { margin-top:0; }
+@media(max-width:760px) {
+  .finance-page>.disclosure-section { padding:14px; }
+  #workspace-view .disclosure-heading { flex-wrap:wrap; }
+  #workspace-view .disclosure-heading>div:has(h2,h3,h4) { flex:1 1 auto; width:100%; }
+  #workspace-view .judicial-section-heading { display:flex; flex-direction:column; align-items:stretch; }
+  #workspace-view .judicial-section-heading>p { width:100%; max-width:100%; }
+  #workspace-view .crm-rank-card-heading.disclosure-heading { flex-wrap:nowrap; }
+  #workspace-view .crm-rank-card-heading.disclosure-heading>div { width:auto; }
+  .settings-form>.disclosure-section { padding:14px; }
+  .identity-color-grid { grid-template-columns:minmax(0,1fr); }
+  .identity-color-field { min-width:0; flex-wrap:wrap; }
+}
+@media(prefers-reduced-motion:reduce) { #workspace-view .section-disclosure-indicator { transition:none; } }

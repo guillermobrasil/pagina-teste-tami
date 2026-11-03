@@ -1,0 +1,35 @@
+.ziggy-companion { --ziggy-row:0%; display:grid; grid-template-columns:240px minmax(0,1fr); gap:32px; align-items:center; margin-bottom:22px; padding:24px 28px; border:1px solid #475765; border-radius:18px; background:linear-gradient(125deg,#243a49,#14232f 72%); min-width:0; }
+.ziggy-stage { display:grid; justify-items:center; gap:8px; }
+.ziggy-pet { width:220px; height:220px; padding:0; border:1px solid #b69b6740; border-radius:50%; cursor:pointer; overflow:hidden; background:#182a36; }
+.ziggy-sprite { display:block; width:100%; height:100%; background-image:url('assets/ziggy-sprites-v1.png'); background-repeat:no-repeat; background-size:400% 600%; background-position:0% var(--ziggy-row); animation:ziggy-frames 4.8s steps(1,end) infinite; }
+.ziggy-companion[data-state=listening] .ziggy-sprite { animation-duration:2.4s; }
+.ziggy-companion[data-state=thinking] .ziggy-sprite { animation-duration:2.2s; }
+.ziggy-companion[data-state=speaking] .ziggy-sprite { animation:ziggy-talk .8s steps(1,end) infinite; }
+.ziggy-companion[data-state=surprised] .ziggy-sprite { animation-duration:2.6s; }
+.ziggy-companion[data-state=resting] .ziggy-sprite { animation-duration:5.8s; }
+.ziggy-nameplate { display:grid; justify-items:center; gap:3px; color:#dcc493; font-weight:700; letter-spacing:.18em; }
+.ziggy-nameplate>span { color:#bbc5cb; letter-spacing:.03em; font-weight:400; }
+.ziggy-intro { min-width:0; }
+.app-shell .ziggy-intro h2 { font-family:'Playfair Display',Georgia,serif; font-size:clamp(26px,3vw,36px) !important; margin:8px 0 16px; font-weight:500; }
+.app-shell .ziggy-intro>.ziggy-status { color:#f3e9d7 !important; font-weight:600; margin:0 0 5px; }
+.ziggy-detail { min-height:46px; margin:0 0 12px; max-width:55ch; }
+.ziggy-actions { display:flex; gap:10px; flex-wrap:wrap; margin:16px 0; }
+.ziggy-actions .primary-button { margin:0; }
+.ziggy-intro>small { display:block; max-width:65ch; line-height:1.6; }
+.ziggy-companion.is-paused .ziggy-sprite { animation:none !important; background-position-x:0%; }
+.chat-panel[aria-busy=true] #chat-input { opacity:.7; }
+.chat-panel .chat-form button:disabled { cursor:wait; opacity:.7; }
+.chat-log[aria-busy=true]::after { content:'Ziggy está organizando a resposta…'; display:block; padding:12px; color:#dbc69c; }
+@keyframes ziggy-frames { 0%,70%,100% { background-position-x:0%; } 78% { background-position-x:33.333333%; } 84% { background-position-x:66.666667%; } 90% { background-position-x:100%; } }
+@keyframes ziggy-talk { 0%,100% { background-position-x:0%; } 25% { background-position-x:33.333333%; } 50% { background-position-x:66.666667%; } 75% { background-position-x:100%; } }
+@media(max-width:760px) {
+  .ziggy-companion { grid-template-columns:minmax(0,1fr); padding:22px 18px; gap:20px; text-align:center; }
+  .ziggy-pet { width:186px; height:186px; }
+  .ziggy-detail { min-height:0; }
+  .ziggy-actions { justify-content:center; }
+  .ziggy-actions button { flex:1 1 180px; min-height:44px; }
+  .ziggy-intro>small { margin-inline:auto; }
+  .chat-panel .chat-form { flex-wrap:wrap; }
+  .chat-panel .chat-form input { min-width:0; flex:1 1 180px; }
+}
+@media(prefers-reduced-motion:reduce) { .ziggy-sprite { animation:none !important; background-position-x:0%; } }

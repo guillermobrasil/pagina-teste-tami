@@ -58,6 +58,11 @@ Decisões visuais:
 - A identidade configurável inclui paleta, fontes de título/corpo e logo. Alterar a identidade não deve reescrever automaticamente artes antigas.
 - O botão “Conheça o painel” abre um guia com atalhos para as áreas.
 
+- Fora da Visão geral, as caixas de conteúdo com título começam recolhidas. Clicar no título/faixa do cabeçalho expande; clicar novamente recolhe. Cada caixa é independente, com seta, botão acessível, `aria-expanded` e suporte a Enter/Espaço. O estado visual é mantido somente em memória durante a navegação da página, sem mudar registros ou backups; atualizar a página reinicia fechado.
+- Clientes, Retornos, cada ranking, caixas de Marketing/editor, Agenda, WhatsApp, Jurídico, Identidade Visual, Aprovações e Configurações seguem esse comportamento. Indicadores de clientes/agenda ficam agrupados em caixas; no Financeiro, resumo, resultado por atendimento e lançamentos são caixas separadas. Formulários de Configurações mantêm seus campos no mesmo form, agrupados visualmente.
+- Botões de ação, seletores e links do cabeçalho continuam independentes da expansão. A validação do navegador abre as caixas que contêm um campo inválido. Avisos gerais, navegação e modais de edição permanecem acessíveis; a Visão geral não recebe caixas recolhíveis.
+
+
 ## 5. Funcionamento de cada área
 
 ### Visão geral
@@ -77,6 +82,12 @@ Decisões visuais:
 - Apresenta perguntas úteis que podem ser clicadas, sem digitação.
 - Clicar em sugestões mantém os atalhos disponíveis; escrever uma pergunta própria pode ocultá-los durante aquela sessão.
 - Mensagens e respostas aparecem na conversa da sessão; `chat` não é persistido no armazenamento local nem nos backups exportados.
+
+- Ziggy é o mascote animado da Secretária, baseado na ilustração do cachorro enviada/aprovada pelo usuário. Usa atlas PNG RGBA local de 24 quadros (4 colunas × 6 linhas, 1024 × 1536), em `assets/ziggy-sprites-v1.png`, animado por CSS. A ilustração foi produzida com image_gen; fotos originais/pessoas não foram copiadas para o projeto.
+- Estados: atento/piscando, acompanhando digitação, preparando resposta, respondendo, surpreso quando o assunto não é reconhecido ou ocorre falha, e descansando após 45 segundos em espera. A preparação visual tem transição de cerca de 480ms; não representa espera por API. Não há interpretação emocional por IA nem captura de áudio.
+- Clicar no Ziggy faz carinho; Conversar com o Ziggy abre a caixa recolhida da conversa e foca o campo. Animações podem ser pausadas e respeitam movimento reduzido do sistema. O personagem aparece apenas nesta aba, sem modificar a Visão geral.
+- O envio bloqueia perguntas duplicadas enquanto prepara a resposta, recupera o formulário em falhas e não força voltar à Secretária caso o usuário troque de aba. Respostas pendentes são descartadas se o objeto de dados/sessão mudar. O chat deixa de chamar `save()` a cada pergunta: a conversa segue somente em memória, sem gravação de documentos/backups ou chamadas externas para responder.
+
 - Existe botão de voz planejado e desativado. A integração futura deve ter custo avaliado antes de ativar.
 - Não realiza avaliação clínica, prescrição ou recomendação individual de procedimento/dose.
 
@@ -215,6 +226,8 @@ Antes de integrar: definir escopo mínimo de dados, permissões, aprovação, cu
 | `dark-theme.css`, `readability.css`, `professional-theme.css` | Tema escuro, leitura e ajustes visuais; ordem de carregamento importa |
 | `assets/` | Recursos visuais, incluindo o monograma oficial |
 | `server.js` | Servidor local com lista de arquivos públicos permitidos, bloqueio de `.env`/Git/testes/banco, configuração pública do Supabase via endpoint e sem cache; padrão `127.0.0.1:3000` |
+| `ziggy.js`, `ziggy.css`, `assets/ziggy-sprites-v1.png` | Estados e animação local do mascote da Secretária; prompts em `ZIGGY-ARTE.md` |
+| `section-disclosures.js`, `section-disclosures.css` | Caixas recolhíveis nas abas, agrupamento de seções e validação acessível |
 | `tami-theme.css`, `tami-collection.js` | Identidade visual do painel e modelos locais de Marketing |
 | `workflow-engine.js` | Períodos, totais financeiros e pendências |
 | `src/cloud-store.js`, `assets/cloud-store.js`, `app-cloud.js` | SDK empacotado, autenticação, fila de gravação e interface da conta |
@@ -237,7 +250,7 @@ O servidor estático é para desenvolvimento local; não é uma infraestrutura p
 
 ## 9. Verificação e pendências conhecidas
 
-Verificação de 02/11/2026 nesta entrega: **32 testes Node e 9 testes Chromium aprovados**, sintaxe JavaScript, build e `git diff --check` aprovados. Capturas inspecionadas de agenda, login, atendimento, financeiro, Marketing e editor, em larguras emuladas de 360/390/768/1440px (Marketing/editor: 390 e 1440px); não houve teste em aparelho físico. Login/envio/conflito no navegador foram testados com API simulada; RLS, gravação, versões e conflito também foram exercitados no banco real com usuários sintéticos e rollback. Advisor de segurança do projeto sem alertas. Cadastro/confirmação por e-mail reais e backup externo agendado/restauração de dump do projeto não foram testados.
+Verificação de 02/11/2026 nesta entrega: **32 testes Node e 17 testes Chromium aprovados**, sintaxe JavaScript, build e `git diff --check` aprovados. Capturas inspecionadas de agenda, login, atendimento, financeiro, Marketing, editor e Ziggy, em larguras emuladas de 360/390/768/1440px (Marketing/editor: 390 e 1440px); não houve teste em aparelho físico. Login/envio/conflito no navegador foram testados com API simulada; RLS, gravação, versões e conflito também foram exercitados no banco real com usuários sintéticos e rollback. Advisor de segurança do projeto sem alertas. Cadastro/confirmação por e-mail reais e backup externo agendado/restauração de dump do projeto não foram testados.
 
 Cobertura existente inclui motores de CRM/Marketing/secretária, navegação de todas as áreas, identidade visual, exportação em ambiente simulado, estratégias e aprovações, cadastro/atendimento/recebimentos, edição sem duplicidade, persistência, recuperação e rejeição de sobreposição na agenda.
 
@@ -301,3 +314,9 @@ Se a alteração for apenas documental, informar isso; não inventar execução 
 - **02/11/2026 — identidade e coleção Tami:** refinado o painel com azul profundo, marfim e acentos discretos; quatro modelos editáveis locais e vínculo manual de design Canva com revisão. Corrigidos contraste das prévias claras e transbordamento do carrossel no celular. 32 testes Node e 9 testes Chromium aprovados; após o acabamento visual, os 2 testes de Marketing também passaram novamente. Monograma enviado ao Canva; gerações iniciadas, sem confirmação de designs salvos. Sem envio ao GitHub nesta entrega.
 
 - **02/11/2026 — envio completo solicitado pelo usuário:** entrega dos ajustes de rotina/Financeiro/pendências, conta privada e esquema do banco, coleção Tami e visual, testes, build e workflows preparados. Reexecutados 32 testes Node com sucesso; verificação do diff e busca por padrões comuns de credenciais sem candidatos nos arquivos destinados ao envio. `.env`, caches, dependências instaladas e artifacts locais ficam fora do Git. As configurações de autenticação online e backup externo descritas no guia continuam pendentes. Confirmar o commit e a publicação pelo GitHub após o envio.
+
+- **02/11/2026 — caixas recolhíveis solicitadas pelo usuário:** informações das caixas nas demais abas começam ocultas e abrem/fecham pelo cabeçalho, independentemente, preservando a Visão geral. Indicadores agrupados e seções financeiras separadas; teclado, estado em memória e revelação de campo inválido implementados. Corrigidas larguras no Jurídico/Identidade no celular. Verificação: 32 testes Node e 12 testes Chromium aprovados, build e sintaxe aprovados. Capturas de CRM fechado/aberto inspecionadas em 390 e 1440px; testes cobrem as dez abas secundárias. Sem teste em dispositivo físico. Sem envio ao GitHub nesta entrega.
+
+- **02/11/2026 — Ziggy animado:** mascote da Secretária com 24 quadros e seis estados, interação com digitação/resposta, carinho, pausa e soneca. CTA revela a conversa recolhida. Chat com bloqueio de duplicidade, tratamento de falha e proteção ao trocar de aba/contexto; envio não grava documentos ou backups. 32 testes Node e 17 testes Chromium aprovados, com inspeção da captura do Ziggy no celular; build e sintaxe aprovados. Sem teste em dispositivo físico, sem voz ou IA externa e sem envio ao GitHub nesta entrega.
+
+- **02/11/2026 — envio do Ziggy e caixas solicitado pelo usuário:** entrega na `main` do mascote animado, atlas/arte, caixas recolhíveis, ajustes do chat e testes correspondentes. Verificações anteriores: 32 testes Node, 17 testes Chromium e build aprovados; diff sem erros antes do envio. Credenciais, fotos originais e artifacts de teste ficam fora do commit. Resultado do envio/publicação deve ser conferido pelo hash remoto e pelos arquivos do site.

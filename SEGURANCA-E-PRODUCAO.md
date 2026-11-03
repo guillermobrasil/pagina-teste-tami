@@ -37,3 +37,5 @@ O protótipo atual não deve ser usado como sistema de registro oficial nem como
 - Guia de ativação: [CONTA-E-BACKUP.md](CONTA-E-BACKUP.md).
 
 - **Marketing/Canva (02/11/2026):** o vínculo com o design é um link externo manual validado para HTTPS e domínio canva.com, guardado no mesmo armazenamento do rascunho/conta. Não enviar dados de clientes ou pacientes ao Canva. Nesta tarefa foi enviado apenas o monograma oficial já público e textos institucionais. O site não recebeu token do Canva nem acesso automático à conta.
+
+- **Ziggy (02/11/2026):** animação local por atlas PNG; nenhuma foto original, pessoa ou conversa é copiada para os arquivos públicos. Sem microfone ou API de respostas. O envio de perguntas não chama a gravação de documentos da conta; conversas continuam apenas em memória e não entram nos backups. Resposta pendente é descartada se houver troca de contexto de dados.

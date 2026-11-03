@@ -204,6 +204,7 @@ let agendaWeekOffset = 0;
 let agendaSelectedDate = localDate();
 let chatSuggestionsDismissed = false;
 let submittingSuggestedQuestion = false;
+let chatReplyPending = false;
 let unsavedChanges = false;
 let financeRange = window.WorkflowLocal.period('month', localDate());
 let financeTaskFilter = '';
@@ -395,6 +396,8 @@ function renderPage(page) {
   const agentScaffold = renderAgentScaffold(page);
   if (agentScaffold && page === 'agenda' && view.querySelector('.agenda-google-panel')) view.querySelector('.agenda-google-panel').insertAdjacentHTML('beforebegin', agentScaffold);
   else if (agentScaffold) view.insertAdjacentHTML('beforeend', agentScaffold);
+  window.SectionDisclosures?.enhance(view, page);
+  window.ZiggyAssistant?.mount(page);
 }
 function renderWhatsApp() {
   const drafts = [...data.whatsappDrafts].reverse();
@@ -407,17 +410,17 @@ function renderJudicialAgent(result = null) {
   return `<div class="judicial-page"><section class="judicial-hero"><div><p class="eyebrow">BIOMEDICINA ESTÉTICA · APOIO JURÍDICO</p><h2>Entenda o cenário. Organize os documentos. Prepare a conversa com seu advogado.</h2><p>Um roteiro inicial para questões profissionais, éticas, sanitárias e judiciais da atuação em estética avançada.</p></div><span class="judicial-mark">§</span></section><div class="notice-box judicial-notice"><strong>Protótipo demonstrativo:</strong> as respostas são roteiros locais e gerais, não são parecer jurídico nem análise de legislação por IA. Não informe nomes, dados de pacientes, números de processo ou documentos sigilosos.</div><section class="panel judicial-intake"><div class="panel-heading"><div><p class="eyebrow">ORGANIZADOR DE CASOS</p><h2>O que você precisa organizar?</h2></div><span class="ai-tag">LOCAL · SEM ENVIO</span></div><form id="judicial-intake-form" class="judicial-form"><label for="judicial-category">Tipo de situação</label><select id="judicial-category" name="category" required><option value="">Selecione uma opção</option><option value="ethical">Conselho profissional ou processo ético</option><option value="complaint">Reclamação, dano ou notificação extrajudicial</option><option value="records">Consentimento, prontuário ou privacidade</option><option value="advertising">Publicidade profissional e redes sociais</option><option value="sanitary">Fiscalização sanitária ou regularização do espaço</option><option value="contract">Contrato, parceria ou prestação de serviços</option><option value="other">Outra questão judicial ou regulatória</option></select><label for="judicial-context">Resumo sem dados identificáveis <small>Opcional · não inclua nomes, contatos, dados de saúde ou número de processo</small></label><textarea id="judicial-context" name="context" rows="4" maxlength="700" placeholder="Ex.: recebi uma solicitação formal do conselho e preciso organizar os documentos e os prazos."></textarea><div class="judicial-form-footer"><p>O resumo fica somente nesta tela: não é salvo nem enviado a um serviço externo.</p><button class="primary-button" type="submit"><span>✦</span> Montar roteiro</button></div></form></section>${resultHtml}<section class="judicial-resources"><div class="judicial-section-heading"><div><p class="eyebrow">CONSULTA DIRETA</p><h2>Fontes oficiais para conferir</h2></div><p>Confira atualizações e regras do seu CRBM antes de tomar decisões.</p></div><div class="judicial-source-grid"><a class="panel judicial-source" href="https://cfbm.gov.br/resolucoes-cfbm/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Resoluções do Conselho Federal de Biomedicina</strong><small>Ver legislação profissional ↗</small></a><a class="panel judicial-source" href="https://cfbm.gov.br/duvidas-frequentes/" target="_blank" rel="noopener noreferrer"><span>CFBM</span><strong>Dúvidas frequentes sobre habilitação e atuação</strong><small>Consultar orientações ↗</small></a><a class="panel judicial-source" href="https://www.gov.br/anvisa/pt-br/centraisdeconteudo/publicacoes/servicosdesaude/notas-tecnicas/notas-tecnicas-vigentes/nota-tecnica-no-2-2024-sei-ggtes-dire3-anvisa-esclarecimentos-sobre-os-servicos-de-estetica-e-atendimento-as-normas-sanitarias-aplicaveis-a-esses-servicos" target="_blank" rel="noopener noreferrer"><span>ANVISA</span><strong>Nota Técnica 2/2024 sobre serviços de estética</strong><small>Ver orientação sanitária ↗</small></a><a class="panel judicial-source" href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener noreferrer"><span>LEGISLAÇÃO FEDERAL</span><strong>Lei Geral de Proteção de Dados (LGPD)</strong><small>Ler texto oficial ↗</small></a></div></section><p class="judicial-disclaimer">Informação geral para organização. Regras podem mudar e também dependem do CRBM, da Vigilância Sanitária local e dos fatos concretos. Procure orientação jurídica individual antes de responder a notificações ou adotar uma estratégia.</p></div>`;
 }
 function renderChat() {
-  const messages = data.chat.map((item) => `<div class="chat-message ${item.from === 'you' ? 'from-you' : 'from-assistant'}"><small>${item.from === 'you' ? 'Você' : 'Secretária demonstrativa'} · ${escapeHTML(item.time)}</small><p>${escapeHTML(item.text)}</p></div>`).join('');
+  const messages = data.chat.map((item) => `<div class="chat-message ${item.from === 'you' ? 'from-you' : 'from-assistant'}"><small>${item.from === 'you' ? 'Você' : 'Ziggy · assistente local'} · ${escapeHTML(item.time)}</small><p>${escapeHTML(item.text)}</p></div>`).join('');
   const suggestedQuestions = [
     'Quais são meus próximos compromissos?',
     'Como está o financeiro do meu espaço?',
     'Há algo aguardando aprovação?',
     'Quais conteúdos estão salvos em Marketing?'
   ];
-  const welcome = `<div class="chat-welcome"><div class="chat-empty">Olá, Tami! Posso ajudar com o sistema. Toque em uma pergunta para começar:</div><div class="chat-suggestions">${suggestedQuestions.map((question) => `<button type="button" data-action="chat-prompt" data-prompt="${escapeHTML(question)}"><span>✦</span>${escapeHTML(question)}</button>`).join('')}</div></div>`;
+  const welcome = `<div class="chat-welcome"><div class="chat-empty">Olá, Tami! Posso ajudar com o sistema. Toque em uma pergunta para começar:</div><div class="chat-suggestions">${suggestedQuestions.map((question) => `<button type="button" ${chatReplyPending ? 'disabled' : ''} data-action="chat-prompt" data-prompt="${escapeHTML(question)}"><span>✦</span>${escapeHTML(question)}</button>`).join('')}</div></div>`;
   const suggestions = chatSuggestionsDismissed ? '' : `<div class="chat-suggestion-panel">${welcome}</div>`;
   const emptyHistory = chatSuggestionsDismissed ? '<div class="chat-empty">Escreva uma pergunta para continuar a conversa.</div>' : '';
-  return `<section class="panel module-panel"><div class="panel-heading"><div><p class="eyebrow">CONVERSA LOCAL</p><h2>Secretária virtual</h2></div><span class="ai-tag">LOCAL</span></div><div class="notice-box">Respostas gratuitas por regras locais. Não há IA generativa, WhatsApp ou serviço externo conectado. A conversa fica disponível nesta sessão e é apagada ao atualizar a página.</div>${suggestions}<div class="chat-log" id="chat-log">${messages || emptyHistory}</div><form class="inline-form chat-form" id="chat-form"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" name="message" maxlength="500" placeholder="Pergunte sobre agenda, marketing ou financeiro…" required><button class="primary-button">Enviar <span>→</span></button></form><div class="secretary-voice-plan"><button class="secondary-button" type="button" disabled aria-describedby="voice-future-note">🎙 Falar com a secretária · futuro</button><small id="voice-future-note">Opção de voz planejada e desligada. Antes de ativar qualquer API, vamos conferir o custo e configurar limites.</small></div><p class="form-hint">Use apenas dados fictícios. Não informe dados de pacientes ou clientes.</p></section>`;
+  return `${window.ZiggyAssistant?.render() || ''}<section class="panel module-panel chat-panel" aria-busy="${chatReplyPending}"><div class="panel-heading"><div><p class="eyebrow">CONVERSA LOCAL</p><h2>Secretária virtual</h2></div><span class="ai-tag">LOCAL</span></div><div class="notice-box">Respostas gratuitas por regras locais. Não há IA generativa, WhatsApp ou serviço externo conectado. A conversa fica disponível nesta sessão e é apagada ao atualizar a página.</div>${suggestions}<div class="chat-log" id="chat-log" aria-busy="${chatReplyPending}" role="log" aria-label="Conversa com o Ziggy" aria-live="polite">${messages || emptyHistory}</div><form class="inline-form chat-form" id="chat-form"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" name="message" maxlength="500" placeholder="Pergunte sobre agenda, marketing ou financeiro…" ${chatReplyPending ? 'disabled' : ''} required><button class="primary-button" ${chatReplyPending ? 'disabled' : ''}>${chatReplyPending ? 'Preparando…' : 'Enviar'} <span>→</span></button></form><div class="secretary-voice-plan"><button class="secondary-button" type="button" disabled aria-describedby="voice-future-note">🎙 Falar com a secretária · futuro</button><small id="voice-future-note">Opção de voz planejada e desligada. Antes de ativar qualquer API, vamos conferir o custo e configurar limites.</small></div><p class="form-hint">Use apenas dados fictícios. Não informe dados de pacientes ou clientes.</p></section>`;
 }
 const artFormats = [
   { key: 'post', label: 'Post único', size: '1080 × 1350', icon: '▣' },
@@ -1118,6 +1121,7 @@ document.addEventListener('click', (event) => {
   if (action === 'agenda-today') { agendaWeekOffset = 0; agendaSelectedDate = localDate(); renderPage('agenda'); return; }
   if (action === 'agenda-select-day') { agendaSelectedDate = button.dataset.date || localDate(); renderPage('agenda'); return; }
   if (action === 'chat-prompt') {
+    if (chatReplyPending) return;
     const form = document.querySelector('#chat-form');
     const input = document.querySelector('#chat-input');
     if (!form || !input) return;
@@ -1547,20 +1551,39 @@ document.addEventListener('submit', async (event) => {
     return;
   }
   if (form.id === 'chat-form') {
-    const message = values.message.trim();
+    if (chatReplyPending) return;
+    const message = String(values.message || '').trim();
     if (!message) return showToast('Digite uma mensagem antes de enviar.', 'error');
     if (!submittingSuggestedQuestion) chatSuggestionsDismissed = true;
     submittingSuggestedQuestion = false;
     const now = new Date();
     const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const previousMessages = data.chat.slice(-12);
-    const response = window.SecretariaLocal?.reply(message, { ...data, chat: previousMessages }, now)
-      || 'O módulo de respostas locais não carregou. Atualize esta página e tente novamente; nenhum dado foi enviado.';
+    const conversationData = data;
+    let response;
+    chatReplyPending = true;
     data.chat.push({ from: 'you', text: message, time });
-    data.chat.push({ from: 'assistant', text: response, time });
-    save(); renderPage('secretaria');
-    document.querySelector('#chat-log').scrollTop = document.querySelector('#chat-log').scrollHeight;
-    document.querySelector('#chat-input').focus();
+    if (activePage === 'secretaria') renderPage('secretaria');
+    try {
+      response = window.SecretariaLocal?.reply(message, { ...conversationData, chat: previousMessages }, now)
+        || 'O módulo de respostas locais não carregou. Atualize esta página e tente novamente; nenhum dado foi enviado.';
+      if (window.ZiggyAssistant) await window.ZiggyAssistant.prepareReply();
+      if (data !== conversationData) return;
+      data.chat.push({ from: 'assistant', text: response, time });
+    } catch (error) {
+      response = 'Não consegui identificar uma resposta agora. Tente reformular a pergunta.';
+      if (data === conversationData) data.chat.push({ from: 'assistant', text: response, time });
+    } finally {
+      chatReplyPending = false;
+      if (activePage === 'secretaria') {
+        renderPage('secretaria');
+        if (data === conversationData) {
+          window.ZiggyAssistant?.react(response || '');
+          document.querySelector('#chat-log').scrollTop = document.querySelector('#chat-log').scrollHeight;
+          document.querySelector('#chat-input').focus();
+        }
+      }
+    }
     return;
   }
   if (form.id === 'appointment-form') {

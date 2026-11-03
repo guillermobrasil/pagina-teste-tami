@@ -1,3 +1,4 @@
+const {revealPanels} = require('./helpers.cjs');
 const {test, expect} = require('@playwright/test');
 test('agenda → atendimento → pagamento e custos → resultado, sem duplicidade', async ({page}) => {
   await page.setViewportSize({width:390,height:844});
@@ -8,6 +9,7 @@ test('agenda → atendimento → pagamento e custos → resultado, sem duplicida
   await appointment.locator('[name=date]').fill('2026-11-02');
   await appointment.locator('[name=time]').fill('18:00');
   await appointment.getByRole('button',{name:'Salvar compromisso'}).click();
+  await revealPanels(page);
   await page.locator('.agenda-event').filter({hasText:'Botox teste de rotina'}).getByRole('button',{name:'Registrar atendimento'}).click();
   await page.locator('[name=clientName]').fill('Cliente sintético da rotina');
   await page.getByRole('button',{name:'Continuar atendimento'}).click();
@@ -22,6 +24,7 @@ test('agenda → atendimento → pagamento e custos → resultado, sem duplicida
   await form.locator('[name=materialCost]').fill('50,00');
   await page.screenshot({path:'.cache/visual/390-atendimento.png',fullPage:true});
   await form.getByRole('button',{name:'Salvar atendimento'}).click();
+  await revealPanels(page);
   await expect(page.locator('.finance-visits-table')).toContainText('Cliente sintético da rotina');
   await expect(page.locator('.finance-summary')).toContainText('R$ 300,00');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
@@ -63,7 +66,7 @@ test('conta privada salva na nuvem sem copiar dados para a demonstração e trat
   await page.locator('#cloud-login-form [name=password]').fill('synthetic-password');
   await page.locator('#cloud-login-form').getByRole('button',{name:'Entrar',exact:true}).click();
   await expect(page.locator('#account-button')).toHaveText('Minha conta');
-  await page.goto('/#configuracoes');
+  await page.goto('/#configuracoes'); await revealPanels(page);
   await page.locator('#settings-form [name=businessName]').fill('Espaço privado de teste');
   await page.getByRole('button',{name:'Salvar configurações'}).click();
   await expect(page.locator('#account-status')).toHaveText('Alterações salvas na conta');
@@ -90,7 +93,7 @@ test('pagamento desconhecido permanece pendente ao editar custos e aceita recebi
     snapshot.clientVisits.push({id:'unknown-visit',clientId:'unknown-client',procedure:'Botox',date:localDate(),durationMinutes:60,chargedTotal:0,paymentConfirmed:false,roomCost:null,materialCostSnapshot:null});
     localStorage.setItem('estetica-pro-ia-demo-v1',JSON.stringify(snapshot));
   });
-  await page.reload(); await page.goto('/#financeiro');
+  await page.reload(); await page.goto('/#financeiro'); await revealPanels(page);
   await page.locator('.finance-visits-table').getByRole('button',{name:'Editar',exact:true}).click();
   let form = page.locator('#crm-visit-form');
   await expect(form.locator('[name=receivedValue]')).toHaveValue('');
@@ -98,7 +101,7 @@ test('pagamento desconhecido permanece pendente ao editar custos e aceita recebi
   await form.getByRole('button',{name:'Salvar atendimento'}).click();
   await page.goto('/#inicio');
   await expect(page.locator('#overview-tasks')).toContainText('Pagamento ainda não informado');
-  await page.goto('/#financeiro');
+  await page.goto('/#financeiro'); await revealPanels(page);
   await page.locator('.finance-visits-table').getByRole('button',{name:'Editar',exact:true}).click();
   form = page.locator('#crm-visit-form');
   await form.locator('[name=receivedValue]').fill('200,00');
